@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "upload-memories": "node scripts/upload-memories.js"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
