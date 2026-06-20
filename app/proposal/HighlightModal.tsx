@@ -113,7 +113,7 @@ export default function HighlightModal({ items, activeYear, onClose }: Highlight
           </div>
           <div className="flex items-center justify-between text-white">
             <div className="flex flex-col">
-              <span className="font-bold text-sm">{activeYear} 하이라이트</span>
+              <span className="font-bold text-sm">{activeYear} Highlight</span>
               <span className="text-[11px] text-white/70 truncate max-w-[200px]">{currentItem.eventTitle}</span>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors z-[120]">
