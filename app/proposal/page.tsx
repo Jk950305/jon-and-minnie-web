@@ -4,7 +4,7 @@ import '@/styles/map-style.css';
 import { useEffect, useState } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Home, Map, MessageCircle, User } from 'lucide-react';
+import { Home, Map, MessageCircle, User, Heart } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
 // 분리된 모든 서브 컴포넌트 임포트
@@ -64,7 +64,7 @@ export default function ProposalPage() {
     );
   };
 
-  // 탭 변경 제어 (지도에서 다른 탭으로 갈 때 선택된 이벤트를 초기화하여 팝업이나 오작동 방지)
+  // 탭 변경 제어
   const handleTabChange = (tab: 'home' | 'map' | 'messages' | 'profile') => {
     setCurrentTab(tab);
     if (tab !== 'map') {
@@ -76,12 +76,25 @@ export default function ProposalPage() {
   return (
     <div className="relative w-full h-screen bg-[#faf7f5] flex flex-col lg:flex-row justify-between overflow-hidden">
       
-      {/* 1. 데스크탑 전용 사이드바 내비게이션 */}
-      <aside className="hidden lg:flex flex-col justify-between w-64 h-full bg-white border-r border-stone-100 p-6 z-[60] shrink-0 shadow-[2px_0_20px_rgba(0,0,0,0.01)]">
+      {/* 1. 데스크톱 전용 마우스 오버 익스펜드 사이드바 */}
+      <aside className="hidden lg:flex flex-col justify-between w-20 hover:w-64 h-full bg-white border-r border-stone-100 p-4 hover:p-6 z-[60] shrink-0 shadow-[2px_0_20px_rgba(0,0,0,0.01)] transition-all duration-300 ease-in-out group">
         <div className="flex flex-col gap-8">
-          <div className="px-2 py-4">
-            <h1 className="text-xl font-serif font-bold tracking-widest text-stone-800">OUR STORY</h1>
+          
+          {/* 🌟 로고 영역 (접혔을 때나 펼쳐졌을 때나 일관되게 하트 그라데이션 유지) */}
+          <div className="h-14 flex items-center relative overflow-hidden whitespace-nowrap px-1">
+            <div className="flex items-center gap-3">
+              {/* 하트 로고 서클 - 항시 고정 노출 */}
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-200 to-rose-400 flex items-center justify-center shadow-sm shrink-0 ml-1.5 group-hover:ml-0 transition-all duration-300">
+                <Heart size={15} className="text-white fill-white" />
+              </div>
+              {/* 텍스트 타이틀 - 펼쳐졌을 때 투명도 조절로 매끄럽게 노출 */}
+              <h1 className="text-base font-serif font-bold tracking-widest text-stone-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                OUR STORY
+              </h1>
+            </div>
           </div>
+
+          {/* 메뉴 내비게이션 */}
           <nav className="flex flex-col gap-2">
             {[
               { id: 'home', label: 'Home', icon: Home },
@@ -95,24 +108,32 @@ export default function ProposalPage() {
                 <button
                   key={menu.id}
                   onClick={() => handleTabChange(menu.id as any)}
-                  className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold transition-all ${
+                  className={`flex items-center gap-4 h-12 px-3.5 rounded-2xl text-sm font-semibold transition-all overflow-hidden whitespace-nowrap ${
                     isActive 
                       ? 'bg-[#d4af37]/10 text-[#d4af37]' 
                       : 'text-stone-500 hover:bg-stone-50 hover:text-stone-800'
                   }`}
                 >
-                  <Icon size={20} className={isActive ? 'text-[#d4af37]' : 'text-stone-400'} />
-                  {menu.label}
+                  <div className="shrink-0">
+                    <Icon size={20} className={isActive ? 'text-[#d4af37]' : 'text-stone-400'} />
+                  </div>
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {menu.label}
+                  </span>
                 </button>
               );
             })}
           </nav>
         </div>
-        <div className="px-4 text-xs text-stone-400 font-medium tracking-wide">© 2026 Lovestagram</div>
+
+        {/* 푸터 카피라이트 */}
+        <div className="px-2 text-[10px] text-stone-400 font-medium tracking-wide whitespace-nowrap overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          © 2026 Lovestagram
+        </div>
       </aside>
 
       {/* 2. 메인 콘텐츠 뷰포트 영역 */}
-      <main className="flex-1 relative w-full h-full overflow-hidden">
+      <main className="flex-1 relative w-full h-full overflow-hidden transition-all duration-300 ease-in-out">
         <AnimatePresence mode="wait">
           {currentTab === 'home' && (
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
