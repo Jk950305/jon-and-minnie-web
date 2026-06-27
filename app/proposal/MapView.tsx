@@ -150,7 +150,7 @@ export default function MapView({
             timeline={timeline}
             /* Changed to 'fixed' and centered to avoid clipping into the bottom navigation bar */
 
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:left-25 lg:translate-x-0 z-[55] w-[90vw] sm:w-[400px] aspect-[9/16] max-h-[80vh] z-[55] flex flex-col"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:left-5 lg:translate-x-0 z-[55] w-[90vw] sm:w-[400px] max-h-[75vh] z-[55] flex flex-col"
           />
         )}
       </AnimatePresence>
