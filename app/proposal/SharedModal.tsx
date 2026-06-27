@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
 import { X, MapPin, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -37,14 +37,14 @@ export default function SharedModal({
   timeline,
   className,
 }: SharedModalProps) {
-  // Reference for the carousel container to calculate widths for drag/snap logic
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Tracking the index before a drag starts to calculate the scroll distance
   const dragStartIndex = useRef(0);
-  
-  // Motion value for horizontal panning of the assets
   const x = useMotionValue(0);
+
+  useEffect(() => {
+    // Reset the animation position to 0 whenever the post (event.id) changes
+    x.set(0);
+  }, [event.id, x]);
 
   /**
    * Syncs the filmstrip position when the index changes.
