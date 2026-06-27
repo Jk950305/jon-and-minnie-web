@@ -7,10 +7,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Home, Map, User, Heart, Gamepad2 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
-// 분리된 서브 컴포넌트 임포트
 import HomeView from './HomeView';
 import MapView from './MapView';
-import GameView from './GameView'; // 게임 컴포넌트 임포트
+import GameView from './GameView';
 import ProfileView from './ProfileView';
 import SharedModal from './SharedModal';
 import ChatWidget from './ChatWidget';
@@ -26,7 +25,6 @@ export default function ProposalPage() {
   const [currentTab, setCurrentTab] = useState<'home' | 'map' | 'game' | 'profile'>('home');
   const [timeline, setTimeline] = useState<any[]>([]);
   const [likedEvents, setLikedEvents] = useState<number[]>([]);
-  
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [currentAssetIndex, setCurrentAssetIndex] = useState<number>(0);
 
@@ -70,9 +68,10 @@ export default function ProposalPage() {
   };
 
   return (
-    <div className="relative w-full h-screen bg-[#faf7f5] flex flex-col lg:flex-row justify-between overflow-hidden">
+    // Removed flex-col in lg to allow side-by-side layout
+    <div className="relative w-full h-screen bg-[#faf7f5] flex overflow-hidden">
       
-      {/* 1. 데스크톱 사이드바 */}
+      {/* 1. Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col justify-between w-20 hover:w-64 h-full bg-white border-r border-stone-100 p-4 hover:p-6 z-[60] shrink-0 shadow-[2px_0_20px_rgba(0,0,0,0.01)] transition-all duration-300 ease-in-out group">
         <div className="flex flex-col gap-8">
           <div className="h-14 flex items-center relative whitespace-nowrap px-1">
@@ -122,8 +121,8 @@ export default function ProposalPage() {
         </div>
       </aside>
 
-      {/* 2. 메인 콘텐츠 */}
-      <main className="flex-1 relative w-full h-full overflow-hidden transition-all duration-300 ease-in-out">
+      {/* 2. Main Content Area - flex-1 ensures it automatically fills remaining width */}
+      <main className="flex-1 relative h-full overflow-hidden transition-all duration-300 ease-in-out">
         <AnimatePresence mode="wait">
           {currentTab === 'home' && (
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
@@ -155,7 +154,7 @@ export default function ProposalPage() {
           )}
         </AnimatePresence>
 
-        <ChatWidget />
+        {currentTab !== 'game' && <ChatWidget />}
 
         <AnimatePresence>
           {currentTab === 'profile' && selectedEvent && (
@@ -168,7 +167,7 @@ export default function ProposalPage() {
         </AnimatePresence>
       </main>
 
-      {/* 3. 모바일 하단 내비게이션 */}
+      {/* 3. Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-stone-100 z-[60] px-6 py-4 flex justify-around items-center shadow-[0_-5px_20px_rgba(0,0,0,0.02)]">
         {(['home', 'map', 'game', 'profile'] as const).map((tab) => {
           const Icons: Record<string, any> = { home: Home, map: Map, game: Gamepad2, profile: User };
