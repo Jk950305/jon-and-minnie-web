@@ -4,12 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Matter from 'matter-js';
 import { createClient } from '@supabase/supabase-js';
 import { Heart } from 'lucide-react';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from '@/lib/supabase';
 
 const FRUITS = [
   { level: 0, radius: 12, color: '#ff1a1a', name: 'Level 1' },
