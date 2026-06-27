@@ -171,10 +171,6 @@ export default function ProfileView({ timeline, onPostClick }: ProfileViewProps)
           onClose={() => setModalData(null)} 
         />
       )}
-
-      {/* Note: The SharedModal logic formerly situated here has been cleanly delegated 
-          to `page.tsx` as part of a centralized state architecture to prevent dead code 
-          and ensure correct overlay behavior over the entire layout. */}
     </div>
   );
 }

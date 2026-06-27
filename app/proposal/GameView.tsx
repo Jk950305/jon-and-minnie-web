@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Heart } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+// Definition of fruit levels, radii, colors, and identifiers.
 const FRUITS = [
   { level: 0, radius: 12, color: '#ff1a1a', name: 'Level 1' },
   { level: 1, radius: 18, color: '#ff9933', name: 'Level 2' },
@@ -20,13 +21,6 @@ const FRUITS = [
 ];
 
 const ALLOWED_NEXT_LEVELS = [0, 1, 2];
-const CONFIG = {
-  width: 380,
-  height: 600,
-  wallThickness: 60,
-  dropY: 40,
-  borderWidth: 10,
-};
 
 /**
  * Returns a random fruit level for the next item to drop.
@@ -35,59 +29,87 @@ const getRandomNextLevel = () =>
   ALLOWED_NEXT_LEVELS[Math.floor(Math.random() * ALLOWED_NEXT_LEVELS.length)];
 
 export default function GameView() {
+  // DOM and Engine Refs
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const imageCacheRef = useRef<Record<number, HTMLImageElement>>({});
 
-  // Ref to track game over status inside event listeners
-  const isGameOverRef = useRef(false);
+  // Game configuration state (calculated dynamically for responsiveness)
+  const [gameConfig, setGameConfig] = useState({
+    width: 380,
+    height: 600,
+    wallThickness: 60,
+    dropY: 40,
+    borderWidth: 10,
+  });
 
+  // Game state
+  const isGameOverRef = useRef(false);
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [proposeSuccess, setProposeSuccess] = useState(false);
-
   const [currentFruitLevel, setCurrentFruitLevel] = useState(getRandomNextLevel());
   const [nextFruitLevel, setNextFruitLevel] = useState(getRandomNextLevel());
-  const [mouseX, setMouseX] = useState(CONFIG.width / 2);
+  const [mouseX, setMouseX] = useState(190); // Centered default
   const [isDropping, setIsDropping] = useState(false);
-  
-  // Track loading state to prevent flickering
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // Sync isGameOver state with the ref
+  // Initialize responsive dimensions on client-side mount
+  useEffect(() => {
+    const handleResize = () => {
+      // Calculate responsive dimensions: fill most of the screen while maintaining aspect ratio
+      const maxWidth = Math.min(window.innerWidth * 0.9, 450);
+      const maxHeight = window.innerHeight * 0.75;
+      
+      setGameConfig({
+        width: maxWidth,
+        height: maxHeight,
+        wallThickness: 60,
+        dropY: 40,
+        borderWidth: 10,
+      });
+      setMouseX(maxWidth / 2);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Sync isGameOver state with the ref for event listeners
   useEffect(() => {
     isGameOverRef.current = isGameOver;
   }, [isGameOver]);
 
   /**
-   * Initializes the physical boundaries of the game world.
+   * Initializes the physical boundaries (walls and ground) of the game world.
    */
   const initWorld = useCallback((engine: Matter.Engine) => {
     const { Bodies, Composite } = Matter;
     const wallOptions = { isStatic: true, render: { visible: false } };
 
     const ground = Bodies.rectangle(
-      CONFIG.width / 2,
-      CONFIG.height + CONFIG.wallThickness / 2 - 10,
-      CONFIG.width,
-      CONFIG.wallThickness,
+      gameConfig.width / 2,
+      gameConfig.height + gameConfig.wallThickness / 2 - 10,
+      gameConfig.width,
+      gameConfig.wallThickness,
       wallOptions
     );
     const wallLeft = Bodies.rectangle(
-      0 - CONFIG.wallThickness / 2,
-      CONFIG.height / 2,
-      CONFIG.wallThickness,
-      CONFIG.height,
+      0 - gameConfig.wallThickness / 2,
+      gameConfig.height / 2,
+      gameConfig.wallThickness,
+      gameConfig.height,
       wallOptions
     );
     const wallRight = Bodies.rectangle(
-      CONFIG.width + CONFIG.wallThickness / 2,
-      CONFIG.height / 2,
-      CONFIG.wallThickness,
-      CONFIG.height,
+      gameConfig.width + gameConfig.wallThickness / 2,
+      gameConfig.height / 2,
+      gameConfig.wallThickness,
+      gameConfig.height,
       wallOptions
     );
-    const deadLine = Bodies.rectangle(CONFIG.width / 2, 80, CONFIG.width, 2, {
+    const deadLine = Bodies.rectangle(gameConfig.width / 2, 80, gameConfig.width, 2, {
       isStatic: true,
       isSensor: true,
       label: 'deadline',
@@ -95,10 +117,10 @@ export default function GameView() {
     });
 
     Composite.add(engine.world, [ground, wallLeft, wallRight, deadLine]);
-  }, []);
+  }, [gameConfig]);
 
   /**
-   * Preloads images from Supabase and populates imageCacheRef.
+   * Preloads images from Supabase.
    */
   const preloadImages = async () => {
     const { data } = await supabase.from('watermelon_images').select('level, image_url');
@@ -130,6 +152,7 @@ export default function GameView() {
   useEffect(() => {
     if (!sceneRef.current || !imagesLoaded) return;
 
+    // Clear previous scene
     if (sceneRef.current.childNodes.length > 0) sceneRef.current.innerHTML = '';
 
     const { Engine, Render, Runner, Bodies, Composite, Events } = Matter;
@@ -141,8 +164,8 @@ export default function GameView() {
       element: sceneRef.current,
       engine: engine,
       options: {
-        width: CONFIG.width,
-        height: CONFIG.height,
+        width: gameConfig.width,
+        height: gameConfig.height,
         wireframes: false,
         background: '#fffbf9',
       },
@@ -150,7 +173,7 @@ export default function GameView() {
 
     initWorld(engine);
 
-    // Render loop: draws custom fruit images
+    // Custom rendering loop to draw fruit images
     Events.on(render, 'afterRender', () => {
       const context = render.context;
       const bodies = Composite.allBodies(engine.world);
@@ -181,7 +204,7 @@ export default function GameView() {
       });
     });
 
-    // Handle collisions
+    // Handle collision logic for merging
     Events.on(engine, 'collisionStart', (event) => {
       if (isGameOverRef.current) return;
 
@@ -216,7 +239,7 @@ export default function GameView() {
       });
     });
 
-    // Update loop: checks for game over condition
+    // Check for game over condition
     Events.on(engine, 'afterUpdate', () => {
       if (isGameOverRef.current) return;
 
@@ -226,6 +249,7 @@ export default function GameView() {
       const isOver = bodies.some((body) => {
         if (body.label === 'wall' || body.label === 'deadline') return false;
         const createdAt = (body.plugin as any)?.createdAt || 0;
+        // Check if fruit has crossed the deadline
         if (now - createdAt < 1000) return false;
         return body.position.y < 80 && body.velocity.y < 0.5 && body.velocity.x < 0.5;
       });
@@ -250,13 +274,13 @@ export default function GameView() {
       Runner.stop(runner);
       Engine.clear(engine);
     };
-  }, [initWorld, proposeSuccess, imagesLoaded]);
+  }, [initWorld, proposeSuccess, imagesLoaded, gameConfig]);
 
   const handleDrop = () => {
     if (isDropping || isGameOver || proposeSuccess || !engineRef.current) return;
     setIsDropping(true);
 
-    const body = Matter.Bodies.circle(mouseX, CONFIG.dropY, FRUITS[currentFruitLevel].radius, {
+    const body = Matter.Bodies.circle(mouseX, gameConfig.dropY, FRUITS[currentFruitLevel].radius, {
       restitution: 0.2,
       label: currentFruitLevel.toString(),
       render: { visible: false },
@@ -277,11 +301,11 @@ export default function GameView() {
     const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
     const rect = sceneRef.current.getBoundingClientRect();
 
-    const relativeX = clientX - rect.left - CONFIG.borderWidth;
+    const relativeX = clientX - rect.left - gameConfig.borderWidth;
     const currentRadius = FRUITS[currentFruitLevel]?.radius ?? 15;
 
     const minX = currentRadius;
-    const maxX = CONFIG.width - currentRadius;
+    const maxX = gameConfig.width - currentRadius;
 
     const x = Math.max(minX, Math.min(relativeX, maxX));
     setMouseX(x);
@@ -300,7 +324,6 @@ export default function GameView() {
     setNextFruitLevel(getRandomNextLevel());
   };
 
-  // If images are not loaded, return a simple loading state
   if (!imagesLoaded) {
     return (
       <div className="flex w-full h-screen items-center justify-center bg-[#faf7f5] text-stone-600 font-semibold">
@@ -310,50 +333,53 @@ export default function GameView() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center pt-8 w-full h-full select-none bg-[#faf7f5]">
-      <div className="w-[380px] flex justify-between items-end mb-4 px-1">
+    <div className="flex flex-col items-center justify-center pt-8 pb-20 w-full h-dvh select-none bg-[#faf7f5]">
+    
+    <div className="flex justify-between items-end mb-4 px-1" style={{ width: gameConfig.width }}>
         <div>
-          <h2 className="text-2xl font-serif font-bold text-stone-800 tracking-wide mb-1">
+            <h2 className="text-2xl font-serif font-bold text-stone-800 tracking-wide mb-1">
             Our Memories
-          </h2>
-          <p className="text-sm font-bold text-[#d4af37]">Score: {score}</p>
+            </h2>
+            <p className="text-sm font-bold text-[#d4af37]">Score: {score}</p>
         </div>
 
         <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-2xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-stone-200 flex flex-col items-center justify-center shrink-0">
-          <span className="text-[9px] font-bold text-stone-400 tracking-widest mb-1.5">NEXT</span>
-          <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full">
-             <img src={imageCacheRef.current[nextFruitLevel].src} className="w-full h-full object-cover" />
-          </div>
+            <span className="text-[9px] font-bold text-stone-400 tracking-widest mb-1.5">NEXT</span>
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full">
+            <img src={imageCacheRef.current[nextFruitLevel].src} className="w-full h-full object-cover" />
+            </div>
         </div>
-      </div>
+        </div>
 
-      <div className="relative">
+        <div className="relative">
         <div
-          ref={sceneRef}
-          className={`rounded-2xl overflow-hidden bg-white shadow-[0_10px_40px_rgba(0,0,0,0.1)] border-[10px] border-white cursor-crosshair touch-none transition-opacity duration-500 ${
+            ref={sceneRef}
+            className={`rounded-2xl overflow-hidden bg-white shadow-[0_10px_40px_rgba(0,0,0,0.1)] border-[10px] border-white cursor-crosshair touch-none transition-opacity duration-500 ${
             proposeSuccess ? 'opacity-30' : 'opacity-100'
-          }`}
-          onMouseMove={handleMove}
-          onTouchMove={handleMove}
-          onClick={handleDrop}
-          onTouchEnd={handleDrop}
-          style={{ width: CONFIG.width, height: CONFIG.height, boxSizing: 'content-box' }}
+            }`}
+            onMouseMove={handleMove}
+            onTouchMove={handleMove}
+            onClick={handleDrop}
+            onTouchEnd={handleDrop}
+            style={{ width: gameConfig.width, height: gameConfig.height, boxSizing: 'content-box' }}
         />
 
+        {/* Floating fruit cursor */}
         {!isDropping && !isGameOver && !proposeSuccess && (
           <div
             className="absolute rounded-full pointer-events-none z-10 flex items-center justify-center overflow-hidden shadow-sm"
             style={{
               width: FRUITS[currentFruitLevel].radius * 2,
               height: FRUITS[currentFruitLevel].radius * 2,
-              left: mouseX + CONFIG.borderWidth - FRUITS[currentFruitLevel].radius,
-              top: CONFIG.dropY + CONFIG.borderWidth - FRUITS[currentFruitLevel].radius,
+              left: mouseX + gameConfig.borderWidth - FRUITS[currentFruitLevel].radius,
+              top: gameConfig.dropY + gameConfig.borderWidth - FRUITS[currentFruitLevel].radius,
             }}
           >
             <img src={imageCacheRef.current[currentFruitLevel].src} className="w-full h-full object-cover" />
           </div>
         )}
 
+        {/* Win Screen */}
         {proposeSuccess && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-50 p-6 text-center">
             <Heart className="text-rose-400 w-20 h-20 mb-6 animate-bounce" fill="currentColor" />
@@ -367,6 +393,7 @@ export default function GameView() {
           </div>
         )}
 
+        {/* Game Over Screen */}
         {isGameOver && !proposeSuccess && (
           <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center z-40">
             <h3 className="text-3xl font-bold text-white mb-2">GAME OVER</h3>

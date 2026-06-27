@@ -111,15 +111,13 @@ export default function MapView({
   return (
     <>
       {/* Top UI */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-6 lg:translate-x-0 z-[50] flex flex-col items-center gap-3 w-80">
+      <div className="fixed top-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-6 lg:translate-x-0 z-[50] flex flex-col items-center gap-3 w-80">
         <div className="bg-white/95 backdrop-blur-xl p-4 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-orange-50 w-full">
           <div className="flex justify-between text-[10px] mb-2 font-bold text-stone-400 tracking-widest uppercase">
             <span>Our Journey</span>
-            {/* Show fraction only when an event is selected */}
             {selectedEvent && <span>{displayIndex} / {timeline.length}</span>}
           </div>
           
-          {/* Show progress bar only when an event is selected */}
           {selectedEvent && (
             <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
               <motion.div 
@@ -133,14 +131,13 @@ export default function MapView({
       </div>
 
       <GoogleMap
-        mapContainerStyle={{ width: '100%', height: '100vh' }}
+        mapContainerStyle={{ width: '100%', height: '100dvh' }} // Changed from 100vh
         center={mapCenter}
         zoom={14}
         onLoad={(map) => { mapRef.current = map; setIsMapReady(true); }}
         options={{ disableDefaultUI: true, mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID }}
       />
 
-      {/* Render SharedModal conditionally */}
       <AnimatePresence>
         {selectedEvent && (
           <SharedModal
@@ -151,7 +148,8 @@ export default function MapView({
             toggleLike={toggleLike}
             navigateTimeline={navigateTimeline}
             timeline={timeline}
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:left-8 lg:translate-x-0 z-40 w-[100vw] sm:w-[350px] lg:w-[400px]"
+            /* Changed to 'fixed' and centered to avoid clipping into the bottom navigation bar */
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:left-25 lg:translate-x-0 z-[55] w-[92vw] sm:w-[400px] lg:w-[400px]"
           />
         )}
       </AnimatePresence>
