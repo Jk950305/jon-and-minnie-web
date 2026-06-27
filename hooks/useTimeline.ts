@@ -17,11 +17,6 @@ export function useTimeline() {
         .select(`*, assets:timeline_assets(asset_url, asset_type)`)
         .order('event_date', { ascending: true });
 
-      if (error) {
-        console.error("Error fetching timeline:", error);
-        return;
-      }
-
       if (data && data.length > 0) {
         setTimeline(data);
         setSelectedEvent(data[0]);
