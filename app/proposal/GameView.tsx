@@ -269,52 +269,66 @@ export default function GameView() {
   }, [initWorld, proposeSuccess, imagesLoaded]); // Removed gameConfig dependency
 
   /**
-   * Helper to map touch/mouse input from screen-space to physics-space
-   */
-  const getPhysicsX = (clientX: number) => {
+ * Helper to map touch/mouse input to physics-space with strict clamping.
+ * This ensures coordinates are always within 0 and GAME_WIDTH.
+ */
+    const getPhysicsX = useCallback((clientX: number) => {
     if (!sceneRef.current) return GAME_WIDTH / 2;
     const rect = sceneRef.current.getBoundingClientRect();
+    
+    // 1. Calculate relative position
     const relativeX = clientX - rect.left;
-    const percentage = relativeX / rect.width;
+    
+    // 2. Convert to percentage (0 to 1) and clamp it so it never goes negative or above 1
+    const percentage = Math.max(0, Math.min(1, relativeX / rect.width));
+    
+    // 3. Map to physics world width
     return percentage * GAME_WIDTH;
-  };
+    }, []);
 
-  const handleDrop = (e: React.MouseEvent | React.TouchEvent) => {
+    const handleMove = (e: React.PointerEvent) => {
+    e.preventDefault();
+    if (isDropping || isGameOver || proposeSuccess || !sceneRef.current) return;
+
+    // Calculate clamped X
+    const rawX = getPhysicsX(e.clientX);
+    
+    // Apply fruit radius constraints so the edges of the fruit don't stick out of the walls
+    const currentRadius = FRUITS[currentFruitLevel]?.radius ?? 15;
+    const minX = currentRadius + 8;
+    const maxX = GAME_WIDTH - currentRadius - 8;
+    
+    const clampedX = Math.max(minX, Math.min(rawX, maxX));
+    setMouseX(clampedX);
+    };
+
+    const handleDrop = (e: React.PointerEvent) => {
+    e.preventDefault();
     if (isDropping || isGameOver || proposeSuccess || !engineRef.current) return;
     
-    // Get mouse/touch X position using helper
-    const x = getPhysicsX(getClientX(e));
+    // Calculate X, but reuse the same radius constraints as handleMove
+    // This ensures the drop point is identical to the visual position
+    const rawX = getPhysicsX(e.clientX);
+    const currentRadius = FRUITS[currentFruitLevel]?.radius ?? 15;
+    const minX = currentRadius;
+    const maxX = GAME_WIDTH - currentRadius;
+    const dropX = Math.max(minX, Math.min(rawX, maxX));
     
     setIsDropping(true);
 
-    const body = Matter.Bodies.circle(x, DROP_Y, FRUITS[currentFruitLevel].radius, {
-      restitution: 0.2,
-      label: currentFruitLevel.toString(),
-      render: { visible: false },
-      plugin: { createdAt: Date.now() },
+    const body = Matter.Bodies.circle(dropX, DROP_Y, currentRadius, {
+        restitution: 0.2,
+        label: currentFruitLevel.toString(),
+        render: { visible: false },
+        plugin: { createdAt: Date.now() },
     });
 
     Matter.Composite.add(engineRef.current.world, body);
-
     setCurrentFruitLevel(nextFruitLevel);
     setNextFruitLevel(getRandomNextLevel());
 
     setTimeout(() => setIsDropping(false), 800);
-  };
-
-  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (isDropping || isGameOver || proposeSuccess || !sceneRef.current) return;
-
-    const x = getPhysicsX(getClientX(e));
-    
-    const currentRadius = FRUITS[currentFruitLevel]?.radius ?? 15;
-    const minX = currentRadius + BORDER_WIDTH;
-    const maxX = GAME_WIDTH - currentRadius - BORDER_WIDTH;
-
-    // Clamp value
-    const clampedX = Math.max(minX, Math.min(x, maxX));
-    setMouseX(clampedX);
-  };
+    };
 
   const resetGame = () => {
     if (!engineRef.current) return;
@@ -360,18 +374,30 @@ export default function GameView() {
         <div className="relative w-full max-w-[450px] aspect-[380/600]">
             <div
                 ref={sceneRef}
+                // Add 'touch-action-none' to prevent browser scrolling interference
                 className={`w-full h-full rounded-2xl overflow-hidden bg-white shadow-[0_10px_40px_rgba(0,0,0,0.1)] border-[10px] border-white cursor-crosshair touch-none transition-opacity duration-500 ${
-                proposeSuccess ? 'opacity-30' : 'opacity-100'
+                    proposeSuccess ? 'opacity-30' : 'opacity-100'
                 }`}
-                onMouseMove={handleMove}
-                onTouchMove={handleMove}
-                onClick={handleDrop}
-                onTouchEnd={handleDrop}
+                // Use Pointer Events
+                onPointerDown={(e) => {
+                    // This captures the pointer so it stays locked to this element even if dragged outside
+                    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                    handleMove(e);
+                }}
+                onPointerMove={handleMove}
+                onPointerUp={handleDrop}
+                // We don't need these anymore as Pointer handles both
+                // onMouseMove={handleMove} 
+                // onTouchMove={handleMove}
+                // onClick={handleDrop}
+                // onTouchEnd={handleDrop}
             />
 
             {/* This style ensures the internal canvas created by Matter.js fills the container perfectly */}
             <style jsx global>{`
                 canvas { width: 100% !important; height: 100% !important; }
+                /* This is critical for mobile game drag-to-move interactions */
+                .touch-none { touch-action: none; }
             `}</style>
 
             {/* Floating fruit cursor */}

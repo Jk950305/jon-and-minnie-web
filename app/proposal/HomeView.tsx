@@ -21,8 +21,8 @@ export default function HomeView() {
         </h1>
         
         <p className="text-stone-400 font-medium tracking-wide max-w-sm leading-relaxed text-sm">
-          여기에 두 분의 특별한 메인 소개글이나 <br />
-          디데이 카운트다운 등을 자유롭게 꾸며보세요. 🤍
+          main <br />
+          🤍
         </p>
       </motion.div>
     </div>
