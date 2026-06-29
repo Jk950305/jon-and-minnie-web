@@ -129,7 +129,7 @@ export default function ProposalPage() {
    * Handle Tab Swapping
    * Clears out any selected event when switching away from the map to ensure clean state.
    */
-  const handleTabChange = (tab: 'home' | 'map' | 'game' | 'profile') => {
+  const handleTabChange = (tab: 'home' | 'map' | 'game' | 'messages' | 'profile') => {
     setCurrentTab(tab);
     if (tab !== 'map') {
       setSelectedEvent(null);
