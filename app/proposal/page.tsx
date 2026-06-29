@@ -4,13 +4,14 @@ import '@/styles/map-style.css';
 import { useEffect, useState } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Home, Map, User, Heart, Gamepad2 } from 'lucide-react';
+import { Home, Map, User, Heart, Gamepad2, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase'; // Import the singleton constant
 
 import HomeView from './HomeView';
 import MapView from './MapView';
 import GameView from './GameView';
 import ProfileView from './ProfileView';
+import MessagesView from './MessagesView';
 import SharedModal from './SharedModal';
 import ChatWidget from './ChatWidget';
 
@@ -24,7 +25,7 @@ const libraries: any = ['marker'];
  */
 export default function ProposalPage() {
   // --- Global Navigation and Data State ---
-  const [currentTab, setCurrentTab] = useState<'home' | 'map' | 'game' | 'profile'>('home');
+  const [currentTab, setCurrentTab] = useState<'home' | 'map' | 'game' | 'messages' | 'profile'>('home');
   const [timeline, setTimeline] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [currentAssetIndex, setCurrentAssetIndex] = useState<number>(0);
@@ -160,6 +161,7 @@ export default function ProposalPage() {
               { id: 'home', label: 'Home', icon: Home },
               { id: 'map', label: 'Map Timeline', icon: Map },
               { id: 'game', label: 'Play Game', icon: Gamepad2 },
+              { id: 'messages', label: 'Messages', icon: MessageCircle }, // 추가된 항목
               { id: 'profile', label: 'Profile Feed', icon: User },
             ].map((menu) => {
               const Icon = menu.icon;
@@ -222,6 +224,12 @@ export default function ProposalPage() {
             </motion.div>
           )}
 
+          {currentTab === 'messages' && (
+            <motion.div key="messages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
+              <MessagesView />
+            </motion.div>
+          )}
+
           {currentTab === 'profile' && (
             <motion.div 
               key="profile" 
@@ -276,8 +284,8 @@ export default function ProposalPage() {
 
       {/* 3. Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-stone-100 z-[60] px-6 py-4 flex justify-around items-center shadow-[0_-5px_20px_rgba(0,0,0,0.02)]">
-        {(['home', 'map', 'game', 'profile'] as const).map((tab) => {
-          const Icons: Record<string, any> = { home: Home, map: Map, game: Gamepad2, profile: User };
+        {(['home', 'map', 'game', 'messages', 'profile'] as const).map((tab) => {
+          const Icons: Record<string, any> = { home: Home, map: Map, game: Gamepad2, messages: MessageCircle, profile: User };
           const Icon = Icons[tab];
           const isMobileActive = currentTab === tab;
           return (

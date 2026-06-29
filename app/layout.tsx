@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Our Story - Jon & Minnie",
   description: "A story of our journey together.",
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

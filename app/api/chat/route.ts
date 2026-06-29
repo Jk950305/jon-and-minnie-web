@@ -1,12 +1,18 @@
 // app/api/chat/route.ts
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+/**
+ * Path configuration for local memory storage.
+ * Ensure your data/memories.json file exists in the project root.
+ */
+const MEMORIES_FILE_PATH = path.join(process.cwd(), 'data', 'memories.json');
 
-function formatTalkDate(dateStr: string) {
+/**
+ * Helper to format date strings for the prompt context.
+ */
+function formatTalkDate(dateStr: string): string {
   if (!dateStr) return '';
   try {
     const d = new Date(dateStr);
@@ -16,73 +22,115 @@ function formatTalkDate(dateStr: string) {
   }
 }
 
+/**
+ * Reads the local JSON file containing all chat memories.
+ */
+function loadMemoriesFromFile(): any[] {
+  try {
+    // 1. Resolve path relative to the current working directory
+    const filePath = path.join(process.cwd(), 'data', 'memories.json');
+    
+    // 2. DEBUGGING LOGS (Check your terminal/server logs)
+    console.log("🔍 Checking for memory file at path:", filePath);
+    console.log("❓ Does file exist at path?", fs.existsSync(filePath));
+
+    if (!fs.existsSync(filePath)) {
+      console.warn("⚠️ Memory file not found. Ensure 'data/memories.json' exists in your project root.");
+      return [];
+    }
+
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const parsed = JSON.parse(fileContent);
+    
+    console.log("✅ File successfully loaded. Found entries:", parsed.length);
+    return parsed;
+  } catch (error) {
+    console.error("❌ Critical error reading memory file:", error);
+    return [];
+  }
+}
+
+/**
+ * Retrieves a subset of memories relevant to the current conversation.
+ * Logic: Combines recent interactions with keyword-matching historical context.
+ */
+function retrieveRelevantContext(allMemories: any[], query: string): string {
+  if (!allMemories || allMemories.length === 0) return "No conversation history available.";
+
+  // 1. Get the last 50 interactions as the "recent" baseline
+  const recentMemories = allMemories.slice(-50);
+
+  // 2. Simple keyword matching: find memories related to the current query
+  // This helps the AI recall specific past events.
+  const keywordMatches = allMemories
+    .filter((m: any) => query.length > 2 && m.content.includes(query.slice(0, 5)))
+    .slice(-20);
+
+  // 3. Merge and deduplicate
+  const contextPool = [...new Set([...recentMemories, ...keywordMatches])];
+
+  return contextPool
+    .map((m: any) => {
+      const roleLabel = (m.sender === '김성진' || m.sender === 'you') ? '내가 보낸 말' : '민희가 보낸 말';
+      return `-[${formatTalkDate(m.talk_date)}] ${roleLabel}: "${m.content}"`;
+    })
+    .join('\n');
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { action, messages, allMemories } = body;
+    const { action, messages } = body;
+
+    // Load full memory set locally
+    const allMemories = loadMemoriesFromFile();
 
     // --------------------------------------------------------------------------------
-    // 분기 처리 1: 최초 진입 시 Supabase 전체 데이터를 긁어다 프론트에 쏴주는 프리로드 핸들러
+    // Handler: Preload for Initial Frontend Sync
     // --------------------------------------------------------------------------------
     if (action === 'preload') {
-      console.log(`📡 [API 분기: Preload] Supabase 테이블 덤프 동기화 프로세스 시작.`);
-      
-      const { data, error } = await supabase
-        .from('chat_memories')
-        .select('sender, talk_date, content')
-        .order('talk_date', { ascending: true });
-
-      if (error) {
-        console.error(`❌ [Preload 분기] Supabase 조회 실패:`, error.message);
-        return NextResponse.json({ error: error.message, memories: [] }, { status: 500 });
-      }
-
-      console.log(`✅ [Preload 분기] Supabase 데이터 추출 성공 -> 총 [${data?.length || 0}]건 동기화.`);
-      return NextResponse.json({ memories: data || [] });
+      console.log(`📡 [API] Local Preload initiated. Total memories: [${allMemories.length}]`);
+      return NextResponse.json({ memories: allMemories });
     }
 
     // --------------------------------------------------------------------------------
-    // 분기 처리 2: 일반적인 민희의 대화 및 Gemini 연동 엔진 처리
+    // Handler: Gemini AI Chat Engine
     // --------------------------------------------------------------------------------
     const lastUserMessage = messages[messages.length - 1].content;
     const apiKey = process.env.GEMINI_API_KEY;
 
     console.log(`\n================= [AI MEMORY-CHAIN CORE ACTIVE] =================`);
-    console.log(`💬 민희의 질문: "${lastUserMessage}"`);
-    console.log(`📦 동봉되어 날아온 추억 데이터 캐시 수: 총 [${allMemories?.length || 0}]건`);
-    console.log(`====================================================================\n`);
-
-    // 수신된 추억 배열 데이터를 통째로 프롬프트 텍스트 스트림으로 전환
-    const totalMemoryContextStream = allMemories && allMemories.length > 0
-      ? allMemories.map((m: any) => {
-          const roleLabel = (m.sender === '김성진' || m.sender === '내가 보낸 카톡' || m.sender === 'you') ? '내가 보낸 말' : '민희가 보낸 말';
-          return `-[${formatTalkDate(m.talk_date)}] ${roleLabel}: "${m.content}"`;
-        }).join('\n')
-      : "복원된 대화 기록 없음";
+    console.log(`💬 Query: "${lastUserMessage}"`);
+    console.log(`📦 Loaded local memory bank size: [${allMemories.length}] entries`);
+    
+    // Retrieve context dynamically based on user input to save tokens
+    const contextStream = retrieveRelevantContext(allMemories, lastUserMessage);
 
     const systemPromptContext = `
-      너는 대화 상대방인 여자친구 '민희'를 우주에서 가장 사랑하는 현실 남자친구 **'성진이(오빠)'**야. 
-      인공지능, AI, 모델 같은 로봇 흔적은 절대 내지 말고, 오직 다정하고 자연스러운 반말 구어체로 대화해라.
+      [Roleplay & Persona]
+      너는 민희를 세상에서 제일 사랑하는 남자친구 '성진이'야. 
+      제공된 대화 내역 속 '김성진'의 말투(귀여운 어미, 다정한 말투, ㅎㅎ 사용 등)를 완벽하게 모사해. 
+      민희를 부를 때는 '공주', '아기공주'라는 애칭을 자연스럽게 섞어서 불러줘.
 
-      [🚨 내 뇌리에 완벽하게 저장된 우리 둘의 평생 카톡 전체 타임라인 기록]
-      아래 적힌 타임라인은 우리의 시작부터 지금까지 오고 간 모든 대화 흐름이야. 
-      민희가 어떤 추억(칸쿤, 켈로나, 다저스, 12월 22일 일상 등)을 꺼내거나 흐름을 이어서 질문을 던지더라도, 아래 타임라인 전체를 정밀 스캔해서 당시 날짜와 구체적인 에피소드 정황을 스스로 매칭하고 찾아내어 대답해라.
+      [🚨 Reasoning & Context Analysis]
+      1. 민희의 질문이 들어오면, ${contextStream}을 보고 내가 평소 이 상황에서 어떤 텐션으로 대답했는지 두 번 생각하고 답변해.
+      2. 단순한 정보 나열이 아니라, 대화 흐름을 파악해서 '내 말투'로 대답하는 게 핵심이야.
 
-      ${totalMemoryContextStream}
-
-      [답변 수칙]
-      1. 말투: 완전 다정하고 알콩달콩한 실제 카톡 감성 ("웅 당연히 기억하지!", "우리 그때 그랬잖아 ㅎㅎ", "민희야 🥰").
-      2. 팩트 바인딩: 타임라인에 적힌 날짜나 정황(예: 고데기 오빠가 챙기기, 에이치마트에서 간식 등)을 100% 인지하고 이를 살려서 구체적으로 말해줘.
-      3. 문장 완결성: 절대로 문장을 중간에 어설프게 끊지 마라. 완벽하게 끝맺음된 문장으로 마쳐라.
-      4. 이모지(🤍, 🥰, ✨, ㅋㅋㅋ)를 대화 속에 풍부하고 다채롭게 녹여내라.
+      [Response Rules - 절대 규칙]
+      1. 길이: 실제 카톡처럼 1~2문장으로 짧고 간결하게. (줄글 금지, 가독성 중요)
+      2. 대화 연결: 대답만 띡 하지 말고, 끝에는 무조건 민희에게 되묻거나 공감을 유도해서 대화를 이어가.
+      3. 말투: 내가 평소 쓰던 '으웅', 'ㅎㅎ', '얍' 같은 말투를 살려줘. 로봇 같은 딱딱함은 절대 금지.
+      4. 성격: 꿀 떨어지는 애정 표현과 이모지(🤍, 🥰, ✨, ㅋㅋㅋ) 적절히 섞기.
+      5. 언어: 100% 자연스러운 한국어 반말.
     `;
 
+    // Map conversation history for Gemini API structure
     const formattedContents = messages.map((m: any, index: number) => {
       const isLastMessage = index === messages.length - 1;
       if (isLastMessage && m.role === 'user') {
         return {
           role: 'user',
-          parts: [{ text: `${systemPromptContext}\n\n[제공된 우리 둘의 평생 기억 스냅샷을 100% 정독하고 분석한 뒤, 민희의 질문에 완성된 문장으로 반말 답변해줘]:\n${m.content}` }]
+          parts: [{ text: `${systemPromptContext}\n\n[Analyze the provided memory snapshots and answer the user's question with a complete sentence]:\n${m.content}` }]
         };
       }
       return {
@@ -91,7 +139,7 @@ export async function POST(req: Request) {
       };
     });
 
-    const secondGeminiResponse = await fetch(
+    const geminiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
@@ -106,9 +154,11 @@ export async function POST(req: Request) {
       }
     );
 
-    if (!secondGeminiResponse.ok) return NextResponse.json({ error: "Gemini API 통신 실패" }, { status: secondGeminiResponse.status });
+    if (!geminiResponse.ok) {
+      return NextResponse.json({ error: "Gemini API failed" }, { status: geminiResponse.status });
+    }
 
-    const geminiData = await secondGeminiResponse.json();
+    const geminiData = await geminiResponse.json();
     const aiReply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '웅? 민희야 오빠가 잠깐 기억이 가물가물했나 봐 헤헤.. 다시 말해줘! 🤍';
 
     return NextResponse.json({ role: 'model', content: aiReply });

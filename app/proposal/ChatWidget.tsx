@@ -106,7 +106,7 @@ export default function ChatWidget() {
       console.error('AI 대화 연동 에러:', error);
       setMessages([
         ...updatedMessages,
-        { role: 'model', content: '미안해 민희야, 잠시 서버가 부끄러움을 타나 봐 힝.. 조금만 있다가 다시 말 걸어줘! 🥺' }
+        { role: 'model', content: '공주 미안해.. 서버가 이상해..! 조금만 있다가 다시 말 걸어줘ㅜㅜ 🥺' }
       ]);
     } finally {
       setIsLoading(false);
@@ -154,7 +154,7 @@ export default function ChatWidget() {
               {isLoading && (
                 <div className="self-start bg-white p-3 rounded-2xl rounded-bl-none shadow-sm border border-rose-50 max-w-[80%] flex items-center gap-2">
                   <Loader2 size={12} className="animate-spin text-rose-400" />
-                  <span className="text-[10px] text-stone-400">기억 더듬는 중... 💭</span>
+                  <span className="text-[10px] text-stone-400">아마 아주 열심히 생각하는 중... 💭</span>
                 </div>
               )}
               
