@@ -18,14 +18,14 @@ export default function Home() {
             href="/proposal" 
             className="px-12 py-3 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all duration-500 uppercase text-sm tracking-widest"
           >
-            FOR MINNIE (Proposal)
+            FOR MINNIE
           </Link>
-          <Link 
+          {/* <Link 
             href="/invitation" 
             className="px-12 py-3 bg-[#332A22] text-[#C5B4A2] hover:bg-[#4A3F35] transition-all duration-500 uppercase text-sm tracking-widest"
           >
             WEDDING INVITATION
-          </Link>
+          </Link> */}
         </div>
       </div>
     </main>

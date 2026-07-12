@@ -12,8 +12,9 @@
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
     "@react-google-maps/api": "^2.20.8",
-    "@supabase/supabase-js": "^2.104.1",
+    "@supabase/supabase-js": "^2.110.2",
     "canvas-confetti": "^1.9.4",
+    "dotenv": "^17.4.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.14.0",
     "matter-js": "^0.20.0",
