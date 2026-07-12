@@ -46,9 +46,9 @@ export default function ProposalPage() {
     }
   }, []);
 
-  // DB에서 타임라인과 앱 설정(잠금 상태)을 불러옵니다. (인증 완료 후에만 로드하도록 최적화 가능)
+  // DB에서 타임라인과 앱 설정(잠금 상태)을 불러옵니다.
   useEffect(() => {
-    if (!isAuthenticated) return; // 인증 전에는 불필요한 DB 호출 방지
+    if (!isAuthenticated) return;
 
     const fetchData = async () => {
       // 타임라인 데이터 로드
@@ -148,7 +148,7 @@ export default function ProposalPage() {
   ] as const;
 
   // ====================================================
-  // 🚫 인증되지 않은 상태일 때 보여줄 로그인 (다크 모드)
+  // 🚫 로그인 화면 (변경 없음)
   // ====================================================
   if (!isAuthenticated) {
     return (
@@ -201,19 +201,28 @@ export default function ProposalPage() {
     );
   }
 
+  // 🔥 핵심 로직: 현재 탭이 스크롤이 필요한 탭인지 판별
+  const isScrollableTab = currentTab === 'home' || currentTab === 'profile';
+
   // ====================================================
-  // ✅ 인증 완료 후 보여줄 원래 메인 앱 (라이트 모드)
+  // ✅ 메인 앱 화면 (조건부 스크롤 레이아웃 적용)
   // ====================================================
   return (
     <motion.div 
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       transition={{ duration: 1 }} 
-      className="relative w-full h-screen bg-[#faf7f5] flex overflow-hidden"
+      // 💡 Home과 Profile 탭일 땐 min-h-screen으로 브라우저 스크롤을 살리고, 나머지 탭은 화면을 잠급니다.
+      className={`relative w-full bg-[#faf7f5] flex ${
+        isScrollableTab ? 'min-h-screen' : 'h-screen overflow-hidden'
+      }`}
     >
       
-      {/* 1. Desktop Sidebar Navigation */}
-      <aside className="hidden lg:flex flex-col justify-between w-20 hover:w-64 h-full bg-white border-r border-stone-100 p-4 hover:p-6 z-[60] shrink-0 shadow-[2px_0_20px_rgba(0,0,0,0.01)] transition-all duration-300 ease-in-out group">
+      {/* 💡 Sidebar가 fixed가 되면서 Flex 레이아웃이 깨지지 않도록 빈 공간(Spacer) 배치 */}
+      <div className="hidden lg:block w-20 shrink-0" />
+
+      {/* 1. Desktop Sidebar Navigation (스크롤 시에도 고정되도록 fixed 추가) */}
+      <aside className="hidden lg:flex flex-col justify-between w-20 hover:w-64 h-screen fixed top-0 left-0 bg-white border-r border-stone-100 p-4 hover:p-6 z-[60] shadow-[2px_0_20px_rgba(0,0,0,0.01)] transition-all duration-300 ease-in-out group">
         <div className="flex flex-col gap-8">
           <div className="h-14 flex items-center relative whitespace-nowrap px-1">
             <div className="flex items-center gap-3">
@@ -266,16 +275,18 @@ export default function ProposalPage() {
       </aside>
 
       {/* 2. Main Content Area */}
-      <main className="flex-1 relative h-full overflow-hidden transition-all duration-300 ease-in-out">
+      <main className={`flex-1 relative w-full transition-all duration-300 ease-in-out ${
+        isScrollableTab ? 'min-h-screen' : 'h-screen overflow-hidden'
+      }`}>
         <AnimatePresence mode="wait">
           {currentTab === 'home' && (
-            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
+            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full min-h-screen pb-20 lg:pb-0">
               <HomeView />
             </motion.div>
           )}
 
           {currentTab === 'map' && (
-            <motion.div key="map" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
+            <motion.div key="map" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-screen pb-20 lg:pb-0">
               <MapView 
                 isLoaded={isLoaded} 
                 timeline={timeline} 
@@ -290,19 +301,19 @@ export default function ProposalPage() {
           )}
 
           {currentTab === 'game' && (
-            <motion.div key="game" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
+            <motion.div key="game" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-screen pb-20 lg:pb-0">
               <GameView onGameClear={handleGameClear} />
             </motion.div>
           )}
 
           {currentTab === 'messages' && (
-            <motion.div key="messages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
+            <motion.div key="messages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-screen pb-20 lg:pb-0">
               <MessagesView />
             </motion.div>
           )}
 
           {currentTab === 'profile' && (
-            <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full overflow-y-auto pb-24 lg:pb-12">
+            <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full min-h-screen pb-24 lg:pb-12">
               <ProfileView timeline={timeline} toggleLike={toggleLike} onPostClick={(event) => { setSelectedEvent(event); setCurrentAssetIndex(0); }} />
             </motion.div>
           )}
@@ -327,7 +338,7 @@ export default function ProposalPage() {
         </AnimatePresence>
       </main>
 
-      {/* 3. Mobile Bottom Navigation */}
+      {/* 3. Mobile Bottom Navigation (모바일 하단 네비게이션이 콘텐츠를 가리지 않도록 상단 div에 pb-20 패딩 추가 완료) */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-stone-100 z-[60] px-6 py-4 flex justify-around items-center shadow-[0_-5px_20px_rgba(0,0,0,0.02)]">
         {menuItems.map((menu) => {
           const Icon = menu.icon;

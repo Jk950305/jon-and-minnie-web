@@ -9,11 +9,10 @@ import { supabase } from '@/lib/supabase'; // Import the Supabase client configu
 // ⚙️ 1. Configuration Area
 // ==========================================
 
-const BUCKET_NAME = 'letters'; // 🚨 REQUIRED: Enter the name of your Supabase storage bucket!
-const BGM_FILE = '/assets/True_Song.mp3'; // Local path
+const BUCKET_NAME = 'letters';
+const BGM_FILE = '/assets/True_Song.mp3';
 
-// 🌌 [NEW] Messages to display line by line along with the slide in the photo tunnel (Stage 1) (20 lines in total)
-// 🌌 Stage 1: Memory Tunnel (Focus on storytelling & shared history)
+// Stage 1: Memory Tunnel (Focus on storytelling & shared history)
 const PROPOSAL_MESSAGES = [
   "안녕 나의 아기공주 민희야.",
   "우리 연애하기 전, 밤늦게 만나 서로를 알아가던 설렘을 기억해?",
@@ -38,7 +37,7 @@ const PROPOSAL_MESSAGES = [
   "나는 매일 너를 더 많이 사랑하고 있음을 느껴."
 ];
 
-// 💌 Stage 2: Proposal Letter (Focus on future promises & sincerity)
+// Stage 2: Proposal Letter (Focus on future promises & sincerity)
 const PROPOSAL_TEXT = `나의 소중한 아기공주 민희야.
 우리가 함께한 지난 시간들을 가만히 되새겨 보니,
 이제 다가올 내일이 두렵기보다는 설렘으로 가득 차.
@@ -80,10 +79,10 @@ export default function CinematicProposalView() {
   // 1. Load Supabase Storage Data
   useEffect(() => {
     const fetchAssets = async () => {
-      console.log("🚀 [Step 1] Starting Supabase data load...");
+      console.log("[Step 1] Starting Supabase data load...");
       
       try {
-        console.log(`📂 [Request] Requesting list for bucket: '${BUCKET_NAME}'...`);
+        console.log(`[Request] Requesting list for bucket: '${BUCKET_NAME}'...`);
         const { data, error } = await supabase.storage.from(BUCKET_NAME).list('');
         
         if (error) {
@@ -91,14 +90,14 @@ export default function CinematicProposalView() {
           throw error;
         }
 
-        console.log("📥 [Response] Raw data received from Supabase:", data);
+        console.log("[Response] Raw data received from Supabase:", data);
 
         if (data && data.length > 0) {
           const sortedData = data
             .filter(file => file.name && !file.name.startsWith('.') && file.name !== '.emptyFolder')
             .sort((a, b) => a.name.localeCompare(b.name));
 
-          console.log(`🗂️ [Sort Complete] Found a total of ${sortedData.length} valid files:`, sortedData);
+          console.log(`[Sort Complete] Found a total of ${sortedData.length} valid files:`, sortedData);
 
           const formattedAssets: Asset[] = sortedData.map(file => {
             const { data: { publicUrl } } = supabase.storage.from(BUCKET_NAME).getPublicUrl(file.name);
@@ -106,13 +105,13 @@ export default function CinematicProposalView() {
             return { url: publicUrl, type: isVideo ? 'video' : 'image', name: file.name };
           });
           
-          console.log("✅ [Final Assets Created] Ready to display on screen:", formattedAssets);
+          console.log("[Final Assets Created] Ready to display on screen:", formattedAssets);
           setAssets(formattedAssets);
         } else {
-          console.warn("⚠️ [Warning] Received data is empty! (Empty array)");
+          console.warn("[Warning] Received data is empty! (Empty array)");
         }
       } catch (err) {
-        console.error("❌ [Exception Occurred]:", err);
+        console.error("[Exception Occurred]:", err);
       } finally {
         setIsReady(true);
       }
@@ -170,7 +169,7 @@ export default function CinematicProposalView() {
   const intervalPerMessage = PROPOSAL_MESSAGES.length > 0 ? tunnelDuration / PROPOSAL_MESSAGES.length : 7500;
 
   return (
-    // 💡 Note: Changed h-full to h-[100dvh] to prevent clipping by mobile address bar/menu bar
+    // Note: Changed h-full to h-[100dvh] to prevent clipping by mobile address bar/menu bar
     <div className="w-full h-[100dvh] relative overflow-hidden bg-black flex items-center justify-center font-sans">
       <audio ref={audioRef} src={BGM_FILE} />
 
@@ -372,9 +371,8 @@ export default function CinematicProposalView() {
               transition={{ duration: 2.5, delay: 5, ease: "easeOut" }}
               className="relative z-10 flex flex-col items-center text-center px-6"
             >
-              <Heart size={48} className="text-pink-300 mb-8 opacity-90" fill="currentColor" />
-              <h1 className="font-serif font-bold text-3xl md:text-5xl text-stone-900 mb-8 leading-relaxed tracking-tight">
-                나의 하나뿐인 아기공주 민희야,<br/>
+              <h1 className="font-serif font-bold text-3xl md:text-5xl text-stone-900 mb-8 leading-relaxed tracking-tight break-keep">
+                나의 하나뿐인 아기공주 민희야,<br className="md:hidden"/> 
                 나랑 결혼해줄래?
               </h1>
               
