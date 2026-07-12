@@ -275,8 +275,18 @@ const RevealText = ({ text, delay = 0 }: { text: string, delay?: number }) => {
   };
 
   const child = {
-    visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring", damping: 12, stiffness: 100 } },
-    hidden: { opacity: 0, y: 40, filter: "blur(10px)", transition: { type: "spring", damping: 12, stiffness: 100 } },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      filter: "blur(0px)", 
+      transition: { type: "spring" as const, damping: 12, stiffness: 100 } 
+    },
+    hidden: { 
+      opacity: 0, 
+      y: 40, 
+      filter: "blur(10px)", 
+      transition: { type: "spring" as const, damping: 12, stiffness: 100 } 
+    },
   };
 
   return (
