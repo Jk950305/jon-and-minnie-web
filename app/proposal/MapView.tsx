@@ -131,11 +131,15 @@ export default function MapView({
       </div>
 
       <GoogleMap
-        mapContainerStyle={{ width: '100%', height: '100dvh' }} // Changed from 100vh
+        mapContainerStyle={{ width: '100%', height: '100dvh' }}
         center={mapCenter}
         zoom={14}
         onLoad={(map) => { mapRef.current = map; setIsMapReady(true); }}
         options={{ disableDefaultUI: true, mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID }}
+        /* 변경점: 지도의 빈 공간을 클릭했을 때만 모달을 닫음 (마커 클릭 시에는 이 이벤트가 타지 않음) */
+        onClick={() => {
+          if (selectedEvent) setSelectedEvent(null);
+        }}
       />
 
       <AnimatePresence>
@@ -148,9 +152,7 @@ export default function MapView({
             toggleLike={toggleLike}
             navigateTimeline={navigateTimeline}
             timeline={timeline}
-            /* Changed to 'fixed' and centered to avoid clipping into the bottom navigation bar */
-
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:left-5 lg:translate-x-0 z-[55] w-[90vw] sm:w-[400px] max-h-[75vh] z-[55] flex flex-col"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:left-5 lg:translate-x-0 z-[55] w-[90vw] sm:w-[400px] max-h-[75vh] flex flex-col"
           />
         )}
       </AnimatePresence>
