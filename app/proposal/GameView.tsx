@@ -298,7 +298,7 @@ export default function GameView({ onGameClear }: GameViewProps) {
     <div className="flex flex-col items-center justify-center pt-8 pb-20 w-full h-dvh select-none bg-[#faf7f5]">
         <div className="flex justify-between items-end mb-4 px-1 w-full max-w-[450px]">
             <div>
-                <h2 className="text-2xl font-serif font-bold text-stone-800 tracking-wide mb-1">Our Memories</h2>
+                <h2 className="text-2xl font-serif font-bold text-stone-800 tracking-wide mb-1">The Minnie Game</h2>
                 <p className="text-sm font-bold text-[#d4af37]">Score: {score}</p>
             </div>
             <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-2xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-stone-200 flex flex-col items-center justify-center shrink-0">

@@ -297,7 +297,7 @@ function ProposalContent() {
         </div>
 
         <div className="px-2 text-[10px] text-stone-400 font-medium tracking-wide whitespace-nowrap overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          © 2026 Lovestagram
+          © 2026 Jon&Minnnie. All rights reserved. 
         </div>
       </aside>
 
