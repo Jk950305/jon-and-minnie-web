@@ -14,45 +14,46 @@ const BGM_FILE = '/assets/True_Song.mp3';
 
 // Stage 1: Memory Tunnel (Focus on storytelling & shared history)
 const PROPOSAL_MESSAGES = [
-  "안녕 나의 아기공주 민희야.",
-  "우리 연애하기 전, 밤늦게 만나 서로를 알아가던 설렘을 기억해?",
+  "안녕 나의 아기공주민희야!",
+  "우리 연애하기 전에 밤늦게 만나 서로를 알아가던 설렘들 기억나?",
   "깊은 대화를 나누며 서로에게 조금씩 스며들던 그 밤들,",
   "그렇게 우리가 연인이 되었던 순간은 내 생애 가장 큰 행운이었어.",
-  "때로는 서툴러 다투기도 하고 아픈 적도 있었지만,",
-  "그 시간들이 있었기에 우린 서로를 더 깊이 이해하게 되었지.",
+  "때로는 서툴러 다투기도 하고 상처 주고 아프게 할 때도 있었지만,",
+  "그 시간들이 있었기에 지금 우리가 서로를 더 깊이 이해할 수 있는 거겠지?",
   "장난치며 수다 떨던 가벼운 일상부터 진지한 고민까지,",
   "민희가 환하게 웃을 때면, 내 세상도 덩달아 눈부시게 밝아졌어.",
   "맛있는 걸 먹을 때면 자연스레 네 생각이 가장 먼저 났고,",
   "예쁜 곳에 갈 때면 '나중에 민희랑 꼭 다시 와야지' 다짐하곤 했어.",
-  "어느새 나의 모든 계절 속에는 너라는 온기가 가득 채워져 있었어.",
+  "어느새 나의 모든 계절 속에는 너라는 온기가 가득 채워져 있더라.",
   "너와 함께 보낸 날들은 인생에서 가장 따뜻한 봄이었고,",
   "가장 시원한 여름이자, 포근하고 아름다운 가을과 겨울이었어.",
-  "참 신기하지? 시간이 흐를수록 너를 향한 마음이 더 커진다는 게.",
-  "익숙함 속에서 피어나는 이 편안함이 나는 참 소중해.",
-  "부족한 나를 따뜻하게 안아주고 다독여줘서 정말 고마워.",
-  "나도 이제 너에게 언제나 기댈 수 있는 든든한 나무가 되어줄게.",
-  "지금까지 우리가 함께 그려온 이 수많은 추억들은,",
-  "앞으로 두 손 맞잡고 만들어갈 우리의 내일을 위한 예고편일 뿐이야.",
-  "서로를 향한 마음이 깊어져 온 이 모든 기록들을 보며,",
-  "나는 매일 너를 더 많이 사랑하고 있음을 느껴."
+  "너무 신기한 게 시간이 흐를수록 민희를 향한 마음이 점점 커진다는 거야.",
+  "익숙함 속에서 피어나는 이 편안함이 정말 소중하다고 생각해.",
+  "많이 부족한 나를 따뜻하게 안아주고 사랑해줘서 너무 고마워.",
+  "앞으로도 민희가 언제나 기댈 수 있게 옆에서 든든한 나무가 되어줄게.",
+  "지금까지 우리가 함께 그려온 이 수많은 추억들로 인해,",
+  "앞으로 두 손 맞잡고 만들어갈 우리의 내일이 너무나도 기대가 돼.",
+  "서로를 향한 마음이 깊어져 온 이 모든 추억들을 되돌아보면,",
+  "나는 매일 민희를 점점 더 많이 사랑하고 있음을 느껴."
 ];
 
 // Stage 2: Proposal Letter (Focus on future promises & sincerity)
-const PROPOSAL_TEXT = `나의 소중한 아기공주 민희야.
-우리가 함께한 지난 시간들을 가만히 되새겨 보니,
+const PROPOSAL_TEXT = 
+`세상에서 내가 가장 사랑하는 아기공주민희야!
+우리가 함께한 지난 시간들을 가만히 되새겨보니,
 이제 다가올 내일이 두렵기보다는 설렘으로 가득 차.
 서로의 손을 꼭 잡고 묵묵히 걸어갈 우리의 길 위에서,
 어떤 계절이 와도 우리는 지금처럼 잘 해낼 거라 믿어.
-매일 아침 눈을 뜨면 가장 먼저 너에게 입 맞추고,
+매일 아침 눈을 뜨면 가장 먼저 너에게 입맞추고,
 잠들기 전 하루의 끝을 너와 온전히 나누는 소중한 일들,
 그 평범하고 소소한 일상이 우리에겐 특별한 기적이 될 거야.
-네 곁에서 언제나 단단하고 든든한 안식처가 되어줄게.
+너의 곁에서 언제나 단단하고 든든한 안식처가 되어줄게.
 우리가 함께 맞이할 모든 시간을 온 마음으로 사랑하며,
-서로의 눈을 맞추고 깊게 이해하는 삶을 함께 살아가자.
-네가 없는 미래는 상상조차 할 수 없을 만큼,
+그 안에서 우리의 미래를 조금 더 구체적으로 그려보고 싶어.
+내 인생에서 민희가 없는 미래는 상상조차 할 수 없을 만큼,
 너와 함께 그려나갈 우리의 내일이 세상 무엇보다 기대돼.
-영원이라는 약속을 너와 천천히 정성껏 채워가고,
-앞으로는 같은 곳을 바라보며 나란히 걷고 싶어.
+영원이라는 약속을 우리 서로 천천히 정성껏 채워가고,
+앞으로도 항상 같은 곳을 바라보며 나란히 걷자!
 나의 어제이자 오늘, 그리고 가장 눈부신 내일인 너에게,
 이제는 연인을 넘어 평생을 함께할 동반자가 되어줬으면 해.`;
 
@@ -79,25 +80,25 @@ export default function CinematicProposalView() {
   // 1. Load Supabase Storage Data
   useEffect(() => {
     const fetchAssets = async () => {
-      console.log("[Step 1] Starting Supabase data load...");
+      //console.log("[Step 1] Starting Supabase data load...");
       
       try {
-        console.log(`[Request] Requesting list for bucket: '${BUCKET_NAME}'...`);
+        //console.log(`[Request] Requesting list for bucket: '${BUCKET_NAME}'...`);
         const { data, error } = await supabase.storage.from(BUCKET_NAME).list('');
         
         if (error) {
-          console.error("❌ [Error] Failed to load data:", error);
+          //console.error("❌ [Error] Failed to load data:", error);
           throw error;
         }
 
-        console.log("[Response] Raw data received from Supabase:", data);
+        //console.log("[Response] Raw data received from Supabase:", data);
 
         if (data && data.length > 0) {
           const sortedData = data
             .filter(file => file.name && !file.name.startsWith('.') && file.name !== '.emptyFolder')
             .sort((a, b) => a.name.localeCompare(b.name));
 
-          console.log(`[Sort Complete] Found a total of ${sortedData.length} valid files:`, sortedData);
+          //console.log(`[Sort Complete] Found a total of ${sortedData.length} valid files:`, sortedData);
 
           const formattedAssets: Asset[] = sortedData.map(file => {
             const { data: { publicUrl } } = supabase.storage.from(BUCKET_NAME).getPublicUrl(file.name);
@@ -105,10 +106,10 @@ export default function CinematicProposalView() {
             return { url: publicUrl, type: isVideo ? 'video' : 'image', name: file.name };
           });
           
-          console.log("[Final Assets Created] Ready to display on screen:", formattedAssets);
+          //console.log("[Final Assets Created] Ready to display on screen:", formattedAssets);
           setAssets(formattedAssets);
         } else {
-          console.warn("[Warning] Received data is empty! (Empty array)");
+          //console.warn("[Warning] Received data is empty! (Empty array)");
         }
       } catch (err) {
         console.error("[Exception Occurred]:", err);
@@ -371,14 +372,11 @@ export default function CinematicProposalView() {
               transition={{ duration: 2.5, delay: 5, ease: "easeOut" }}
               className="relative z-10 flex flex-col items-center text-center px-6"
             >
-              <h1 className="font-serif font-bold text-3xl md:text-5xl text-stone-900 mb-8 leading-relaxed tracking-tight break-keep">
-                나의 하나뿐인 아기공주 민희야,<br className="md:hidden"/> 
+              <h1 className="font-serif font-bold text-3xl md:text-5xl text-stone-900 mb-8 leading-relaxed tracking-tight break-keep drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+                나의 하나뿐인 아기공주 민희야,<br/> 
                 나랑 결혼해줄래?
               </h1>
-              
-              <p className="font-serif italic text-stone-600 text-lg md:text-xl tracking-widest opacity-80">
-                Will you marry me?
-              </p>
+            
             </motion.div>
 
             {/* Replay button */}

@@ -111,14 +111,14 @@ export default function MapView({
   return (
     <>
       {/* Top UI */}
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-6 lg:translate-x-0 z-[50] flex flex-col items-center gap-3 w-80">
-        <div className="bg-white/95 backdrop-blur-xl p-4 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-orange-50 w-full">
-          <div className="flex justify-between text-[10px] mb-2 font-bold text-stone-400 tracking-widest uppercase">
-            <span>Our Journey</span>
-            {selectedEvent && <span>{displayIndex} / {timeline.length}</span>}
-          </div>
-          
-          {selectedEvent && (
+      {selectedEvent && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-6 lg:translate-x-0 z-[50] flex flex-col items-center gap-3 w-80">
+          <div className="bg-white/95 backdrop-blur-xl p-4 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-orange-50 w-full">
+            <div className="flex justify-between text-[10px] mb-2 font-bold text-stone-400 tracking-widest uppercase">
+              <span>Our Journey</span>
+              <span>{displayIndex} / {timeline.length}</span>
+            </div>
+            
             <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
               <motion.div 
                 className="bg-[#d4af37] h-full" 
@@ -126,9 +126,9 @@ export default function MapView({
                 animate={{ width: `${progressWidth}%` }} 
               />
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '100dvh' }}

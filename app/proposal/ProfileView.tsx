@@ -20,13 +20,23 @@ interface HighlightItem {
 
 export default function ProfileView({ timeline, onPostClick }: ProfileViewProps) {
   const [modalData, setModalData] = useState<{ items: HighlightItem[], year: string } | null>(null);
+  // 💡 하이라이트 그룹(연도) 전환 애니메이션 상태 추가
+  const [transitionState, setTransitionState] = useState<{
+    isAnimating: boolean;
+    direction: 'next' | 'prev' | null;
+    displayYear: string;
+  }>({
+    isAnimating: false,
+    direction: null,
+    displayYear: '',
+  });
 
   const getHighlights = () => {
     const groups: { [key: string]: HighlightItem[] } = {};
     const covers: { [key: string]: string | null } = {};
 
     timeline.forEach((event) => {
-      const dateString = event.event_date || event.created_at || event.date;
+      const dateString = event.event_date;
       if (!dateString) return;
 
       const year = new Date(dateString).getFullYear().toString();
@@ -60,16 +70,39 @@ export default function ProfileView({ timeline, onPostClick }: ProfileViewProps)
 
   const highlights = getHighlights();
 
+  // 💡 스와이프나 끝 탭으로 연도가 바뀔 때 인스타 스타일 효과 트리거
+  const handleYearChange = (nextYearData: { items: HighlightItem[], year: string }, direction: 'next' | 'prev') => {
+    if (transitionState.isAnimating) return;
+
+    // 1. 애니메이션 시작 및 대상 연도 지정
+    setTransitionState({
+      isAnimating: true,
+      direction,
+      displayYear: nextYearData.year,
+    });
+
+    // 2. 0.4초(애니메이션 시간) 후에 실제 데이터 변경 및 애니메이션 종료
+    setTimeout(() => {
+      setModalData(nextYearData);
+      setTransitionState({
+        isAnimating: false,
+        direction: null,
+        displayYear: '',
+      });
+    }, 400); 
+  };
+
+  const handleModalClose = () => {
+    setModalData(null);
+    setTransitionState({ isAnimating: false, direction: null, displayYear: '' });
+  };
+
   return (
     <div className="w-full max-w-5xl mx-auto pt-6 md:pt-12 px-4 md:px-6">
       
       {/* 상단 프로필 영역 */}
       <div className="max-w-3xl mx-auto w-full mb-6 md:mb-12">
-        
-        {/* [상단 로우] 프로필 이미지(좌) + 계정정보/스펙/데스크탑소개글(우) */}
         <div className="flex items-center gap-6 md:gap-16 mb-4 md:mb-0 px-1">
-          
-          {/* 좌측: 아바타 써클 */}
           <div className="shrink-0 w-20 h-20 md:w-32 md:h-32">
             <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 via-pink-400 to-rose-400 p-[2.5px] md:p-[3px] flex items-center justify-center shadow-sm">
               <div className="w-full h-full rounded-full bg-white p-[2.5px] flex items-center justify-center">
@@ -80,10 +113,7 @@ export default function ProfileView({ timeline, onPostClick }: ProfileViewProps)
             </div>
           </div>
 
-          {/* 우측: 계정 정보 및 데스크탑용 바이오 기입란 */}
           <div className="flex-1 flex flex-col gap-2 md:gap-4 text-left">
-            
-            {/* ID & 인증 배지 */}
             <div className="flex items-center gap-1.5">
               <h2 className="text-lg md:text-2xl font-bold text-stone-900 tracking-wide font-sans truncate max-w-[180px] sm:max-w-none">
                 jon_and_minnie
@@ -91,7 +121,6 @@ export default function ProfileView({ timeline, onPostClick }: ProfileViewProps)
               <BadgeCheck className="text-[#0095f6] fill-[#0095f6] stroke-white shrink-0 w-[18px] h-[18px] md:w-[22px] md:h-[22px]" />
             </div>
 
-            {/* 인스타 스펙 카운터 */}
             <div className="flex gap-4 md:gap-6 text-xs md:text-sm text-stone-600">
               <div>
                 <span className="font-semibold text-stone-900">{timeline.length}</span> posts
@@ -104,7 +133,6 @@ export default function ProfileView({ timeline, onPostClick }: ProfileViewProps)
               </div>
             </div>
 
-            {/* [데스크탑 전용 소개글] 우측 정렬라인에 맞춰 자연스럽게 왼쪽 정렬됨 */}
             <div className="hidden md:block text-left text-sm space-y-0.5 pt-2"> 
               <span className="font-bold text-stone-900 block">Our Lovestagram</span>
               <p className="text-stone-500 font-normal leading-relaxed">
@@ -114,11 +142,9 @@ export default function ProfileView({ timeline, onPostClick }: ProfileViewProps)
                 Followed by happiness
               </span>
             </div>
-
           </div>
         </div>
 
-        {/* [모바일 전용 소개글] 모바일 화면에서는 이미지 아래로 떨어져서 노출 */}
         <div className="md:hidden text-left text-xs space-y-0.5 px-1 mt-4"> 
           <span className="font-bold text-stone-900 block">Our Lovestagram</span>
           <p className="text-stone-500 font-normal leading-relaxed">
@@ -128,10 +154,9 @@ export default function ProfileView({ timeline, onPostClick }: ProfileViewProps)
             Followed by happiness
           </span>
           <div className="text-[11px] text-stone-400 pt-1">
-            since <span className="font-semibold text-stone-500">2019.10.25</span>
+            since <span className="font-semibold text-stone-500">2015.10.25</span>
           </div>
         </div>
-
       </div>
 
       {/* Highlights Section */}
@@ -202,7 +227,10 @@ export default function ProfileView({ timeline, onPostClick }: ProfileViewProps)
         <HighlightModal 
           items={modalData.items} 
           activeYear={modalData.year} 
-          onClose={() => setModalData(null)} 
+          allHighlights={highlights}
+          onYearChange={handleYearChange}
+          transitionState={transitionState} // 💡 애니메이션 상태 전달
+          onClose={handleModalClose} 
         />
       )}
     </div>

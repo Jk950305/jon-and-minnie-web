@@ -276,7 +276,7 @@ export default function SinglePageProposal() {
           <motion.span 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 1, ease: "easeOut" }}
+            transition={{ delay: 1, duration: 1, ease: "easeOut" }}
             className="block text-[5.8vw] sm:text-4xl md:text-5xl lg:text-6xl break-keep"
           >
             우리가 같이 보내온 수많은 계절,
@@ -285,7 +285,7 @@ export default function SinglePageProposal() {
           <motion.span 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 1, ease: "easeOut" }}
+            transition={{ delay: 2, duration: 1, ease: "easeOut" }}
             className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400 font-medium block text-[6vw] sm:text-4xl md:text-5xl lg:text-6xl mt-2 md:mt-4 break-keep"
           >
             그리고 앞으로 채워 갈 우리의 내일.
@@ -298,7 +298,7 @@ export default function SinglePageProposal() {
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1, duration: 1 }}
+          transition={{ delay: 3, duration: 1 }}
           className="text-center w-full max-w-4xl mx-auto"
         >
           <div className="flex flex-col items-center mb-4 md:mb-8">
@@ -322,7 +322,7 @@ export default function SinglePageProposal() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 1 }}
+          transition={{ delay: 4, duration: 1 }}
           className="flex flex-col items-center space-y-3 md:space-y-6 max-w-2xl mx-auto"
         >
           <div className="w-[1px] h-6 md:h-16 bg-gradient-to-b from-pink-400 to-transparent" />

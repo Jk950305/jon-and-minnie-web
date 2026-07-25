@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Matter from 'matter-js';
 import { Heart, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -32,6 +33,7 @@ interface GameViewProps {
 }
 
 export default function GameView({ onGameClear }: GameViewProps) {
+  const router = useRouter();
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const imageCacheRef = useRef<Record<number, HTMLImageElement>>({});
@@ -45,6 +47,52 @@ export default function GameView({ onGameClear }: GameViewProps) {
   const [mouseX, setMouseX] = useState(GAME_WIDTH / 2);
   const [isDropping, setIsDropping] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  
+  const [showExitModal, setShowExitModal] = useState(false);
+
+  useEffect(() => {
+    isGameOverRef.current = isGameOver;
+  }, [isGameOver]);
+
+  useEffect(() => {
+    if (proposeSuccess && onGameClear) {
+      onGameClear();
+    }
+  }, [proposeSuccess, onGameClear]);
+
+  // 💡 [추가] 게임 중 뒤로가기/제스처 감지 시 팝업 띄우기
+  useEffect(() => {
+    if (isGameOver || proposeSuccess) return;
+
+    // 히스토리에 방패(가드) 상태 쌓기
+    window.history.pushState({ gameGuard: true }, '', window.location.href);
+
+    const handlePopState = () => {
+      if (!isGameOverRef.current && !proposeSuccess) {
+        setShowExitModal(true);
+        // 팝업이 뜬 상태에서 뒤로가기로 풀린 스택을 다시 잠금
+        window.history.pushState({ gameGuard: true }, '', window.location.href);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isGameOver, proposeSuccess]);
+
+  // 💡 취소 누를 때 (팝업 닫고 게임 유지)
+  const handleCancelExit = () => {
+    setShowExitModal(false);
+  };
+
+  // 💡 확인 누를 때 (무조건 홈탭으로 이동)
+  const handleConfirmExit = () => {
+    setShowExitModal(false);
+    router.replace('?tab=home');
+  };
+
+
 
   useEffect(() => {
     isGameOverRef.current = isGameOver;
@@ -56,6 +104,7 @@ export default function GameView({ onGameClear }: GameViewProps) {
       onGameClear();
     }
   }, [proposeSuccess, onGameClear]);
+
 
   const initWorld = useCallback((engine: Matter.Engine) => {
     const { Bodies, Composite } = Matter;
@@ -259,6 +308,29 @@ export default function GameView({ onGameClear }: GameViewProps) {
                 </div>
             </div>
         </div>
+
+        {showExitModal && (
+          <div className="absolute inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-xs shadow-2xl text-center animate-in fade-in zoom-in duration-200">
+              <h3 className="text-lg font-bold text-stone-800 mb-2">정말 나가시겠습니까?</h3>
+              <p className="text-sm text-stone-500 mb-6">진행 중인 게임 내용이 사라집니다.</p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={handleCancelExit}
+                  className="flex-1 py-2.5 bg-stone-100 text-stone-700 rounded-xl font-semibold text-sm hover:bg-stone-200 transition-colors"
+                >
+                  취소
+                </button>
+                <button 
+                  onClick={handleConfirmExit}
+                  className="flex-1 py-2.5 bg-[#d4af37] text-white rounded-xl font-semibold text-sm hover:bg-[#c49f27] transition-colors shadow-sm"
+                >
+                  나가기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="relative w-full max-w-[450px] aspect-[380/600]">
             <div

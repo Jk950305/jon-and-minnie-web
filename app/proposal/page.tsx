@@ -3,6 +3,7 @@
 import '@/styles/map-style.css';
 import { useEffect, useState } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Home, Map, User, Heart, Gamepad2, MessageCircle, Lock } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -14,22 +15,27 @@ import ProfileView from './ProfileView';
 import MessagesView from './MessagesView';
 import SharedModal from './SharedModal';
 
-// Required Google Maps libraries
 const libraries: any = ['marker'];
 
 export default function ProposalPage() {
-  // 🔒 인증 상태 관리 (세션 스토리지 활용)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState(false);
 
-  // 앱 구동 상태 관리
-  const [currentTab, setCurrentTab] = useState<'home' | 'map' | 'messages' | 'game' | 'profile'>('home');
+  // 💡 URL의 ?tab= 파라미터를 읽어 초기 탭 결정
+  const [currentTab, setCurrentTab] = useState<'home' | 'map' | 'messages' | 'game' | 'profile'>(() => {
+    const validTabs = ['home', 'map', 'messages', 'game', 'profile'];
+    return validTabs.includes(tabParam || '') ? (tabParam as any) : 'home';
+  });
+
   const [timeline, setTimeline] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [currentAssetIndex, setCurrentAssetIndex] = useState<number>(0);
 
-  // 잠금 해제 및 배지 상태 관리
   const [isMessageUnlocked, setIsMessageUnlocked] = useState<boolean>(false);
   const [hasViewedMessage, setHasViewedMessage] = useState<boolean>(false);
 
@@ -38,7 +44,6 @@ export default function ProposalPage() {
     libraries,
   });
 
-  // 컴포넌트 마운트 시 인증 상태 체크 (새로고침 방지)
   useEffect(() => {
     const isAuth = sessionStorage.getItem('proposal_auth');
     if (isAuth === 'true') {
@@ -46,19 +51,48 @@ export default function ProposalPage() {
     }
   }, []);
 
-  // DB에서 타임라인과 앱 설정(잠금 상태)을 불러옵니다.
+  // 💡 브라우저 뒤로가기/앞으로가기 감지 시 쿼리 파라미터 동기화
+  useEffect(() => {
+    const validTabs = ['home', 'map', 'messages', 'game', 'profile'];
+    if (validTabs.includes(tabParam || '')) {
+      setCurrentTab(tabParam as any);
+      if (tabParam !== 'map') {
+        setSelectedEvent(null);
+        setCurrentAssetIndex(0);
+      }
+    } else if (!tabParam) {
+      setCurrentTab('home');
+    }
+  }, [tabParam]);
+
+  // 💡 [핵심] 홈 탭에서 뒤로가기(백제스처) 발생 시 루트 페이지('/')로 강제 이동
+  useEffect(() => {
+    const handlePopState = () => {
+      if (currentTab === 'home') {
+        router.replace('/');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentTab, router]);
+
   useEffect(() => {
     if (!isAuthenticated) return;
 
     const fetchData = async () => {
-      // 타임라인 데이터 로드
       const { data: timelineData } = await supabase
         .from('timeline')
         .select(`*, assets:timeline_assets(asset_url, asset_type)`)
         .order('event_date', { ascending: true });
-      if (timelineData) setTimeline(timelineData);
+        
+      if (timelineData) {
+        const formattedTimeline = timelineData.map((item) => ({
+          ...item,
+          date: item.event_date ? item.event_date.replace(/-/g, '.') : '',
+        }));
+        setTimeline(formattedTimeline);
+      }
 
-      // 설정 데이터 로드 (메세지 잠금 해제 여부)
       const { data: settingsData } = await supabase
         .from('app_settings')
         .select('*')
@@ -73,19 +107,18 @@ export default function ProposalPage() {
     fetchData();
   }, [isAuthenticated]);
 
-  // 비밀번호 제출 핸들러
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === '20191025') {
       setIsAuthenticated(true);
       sessionStorage.setItem('proposal_auth', 'true');
+      router.replace('?tab=home', { scroll: false });
     } else {
       setAuthError(true);
       setPassword('');
     }
   };
 
-  // 좋아요 토글
   const toggleLike = async (event: any) => {
     const newStatus = !event.liked;
     const { data, error } = await supabase
@@ -109,26 +142,36 @@ export default function ProposalPage() {
     }
   };
 
+  // 💡 [핵심] 탭 변경 시 히스토리 스택 최적화
   const handleTabChange = async (tab: 'home' | 'map' | 'messages' | 'game' | 'profile') => {
-    // 락이 걸려있을 때 메세지 탭 클릭 차단
     if (tab === 'messages' && !isMessageUnlocked) return;
+    if (currentTab === tab) return;
 
     setCurrentTab(tab);
-    
-    // 다른 탭으로 이동할 때 초기화
+
+    // 홈 탭이 아닌 다른 탭 간의 이동일 경우 replace를 사용하여 스택이 깊어지는 것을 방지
+    // 이렇게 하면 어떤 탭에 있든 뒤로가기를 한 번 누르면 무조건 홈 탭으로 돌아갑니다.
+    if (tab === 'home') {
+      router.push(`?tab=home`, { scroll: false });
+    } else {
+      if (currentTab === 'home') {
+        router.push(`?tab=${tab}`, { scroll: false });
+      } else {
+        router.replace(`?tab=${tab}`, { scroll: false });
+      }
+    }
+
     if (tab !== 'map') {
       setSelectedEvent(null);
       setCurrentAssetIndex(0);
     }
 
-    // 메세지 탭에 진입하면 파란 뱃지를 없애고 DB 업데이트
     if (tab === 'messages' && isMessageUnlocked && !hasViewedMessage) {
       setHasViewedMessage(true);
       await supabase.from('app_settings').update({ has_viewed_message: true }).eq('id', 1);
     }
   };
 
-  // 게임 클리어 시 호출될 함수
   const handleGameClear = async () => {
     setIsMessageUnlocked(true);
     setHasViewedMessage(false);
@@ -147,9 +190,6 @@ export default function ProposalPage() {
     { id: 'profile', label: 'Profile Feed', icon: User },
   ] as const;
 
-  // ====================================================
-  // 🚫 로그인 화면 (변경 없음)
-  // ====================================================
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen bg-[#1A1512] flex flex-col items-center justify-center p-8 font-sans transition-opacity duration-700"> 
@@ -201,27 +241,19 @@ export default function ProposalPage() {
     );
   }
 
-  // 🔥 핵심 로직: 현재 탭이 스크롤이 필요한 탭인지 판별
   const isScrollableTab = currentTab === 'home' || currentTab === 'profile';
 
-  // ====================================================
-  // ✅ 메인 앱 화면 (조건부 스크롤 레이아웃 적용)
-  // ====================================================
   return (
     <motion.div 
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       transition={{ duration: 1 }} 
-      // 💡 Home과 Profile 탭일 땐 min-h-screen으로 브라우저 스크롤을 살리고, 나머지 탭은 화면을 잠급니다.
       className={`relative w-full bg-[#faf7f5] flex ${
         isScrollableTab ? 'min-h-screen' : 'h-screen overflow-hidden'
       }`}
     >
-      
-      {/* 💡 Sidebar가 fixed가 되면서 Flex 레이아웃이 깨지지 않도록 빈 공간(Spacer) 배치 */}
       <div className="hidden lg:block w-20 shrink-0" />
 
-      {/* 1. Desktop Sidebar Navigation (스크롤 시에도 고정되도록 fixed 추가) */}
       <aside className="hidden lg:flex flex-col justify-between w-20 hover:w-64 h-screen fixed top-0 left-0 bg-white border-r border-stone-100 p-4 hover:p-6 z-[60] shadow-[2px_0_20px_rgba(0,0,0,0.01)] transition-all duration-300 ease-in-out group">
         <div className="flex flex-col gap-8">
           <div className="h-14 flex items-center relative whitespace-nowrap px-1">
@@ -274,7 +306,6 @@ export default function ProposalPage() {
         </div>
       </aside>
 
-      {/* 2. Main Content Area */}
       <main className={`flex-1 relative w-full transition-all duration-300 ease-in-out ${
         isScrollableTab ? 'min-h-screen' : 'h-screen overflow-hidden'
       }`}>
@@ -338,7 +369,6 @@ export default function ProposalPage() {
         </AnimatePresence>
       </main>
 
-      {/* 3. Mobile Bottom Navigation (모바일 하단 네비게이션이 콘텐츠를 가리지 않도록 상단 div에 pb-20 패딩 추가 완료) */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-stone-100 z-[60] px-6 py-4 flex justify-around items-center shadow-[0_-5px_20px_rgba(0,0,0,0.02)]">
         {menuItems.map((menu) => {
           const Icon = menu.icon;

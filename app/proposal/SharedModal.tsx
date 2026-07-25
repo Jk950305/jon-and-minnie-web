@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
-import { X, MapPin, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, MapPin, Heart, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 
 /**
  * Interface for SharedModal properties.
@@ -67,18 +67,30 @@ export default function SharedModal({
   /**
    * Logic to determine if the user dragged far enough to switch to next/prev slide.
    */
-  const handleDragEnd = () => {
+  const handleDragEnd = (_: any, info: any) => {
     if (!containerRef.current) return;
-    const width = containerRef.current.offsetWidth;
-    const offset = x.get();
+
+    const swipeThreshold = 50;     // 이 거리(px) 이상 밀면 다음 장으로 전환
+    const velocityThreshold = 300; // 이 속도 이상으로 빠르게 튕기면 거리 상관없이 전환
     
-    // Calculate how many indices the user moved based on drag offset
-    const delta = Math.round(-offset / width) - dragStartIndex.current;
-    
-    // Ensure we only move one step at a time, keeping it within bounds
-    const step = Math.max(-1, Math.min(1, delta));
-    const nextIndex = Math.max(0, Math.min(dragStartIndex.current + step, (event?.assets?.length || 1) - 1));
-    
+    const { offset, velocity } = info;
+    let step = 0;
+
+    // 왼쪽으로 스와이프 (다음 사진)
+    if (offset.x < -swipeThreshold || velocity.x < -velocityThreshold) {
+      step = 1;
+    } 
+    // 오른쪽으로 스와이프 (이전 사진)
+    else if (offset.x > swipeThreshold || velocity.x > velocityThreshold) {
+      step = -1;
+    }
+
+    // 경계선 처리 및 인덱스 업데이트 (움직임이 없거나 임계값 미달이면 step이 0이 되어 제자리로 스냅)
+    const nextIndex = Math.max(
+      0, 
+      Math.min(dragStartIndex.current + step, (event?.assets?.length || 1) - 1)
+    );
+
     setCurrentAssetIndex(nextIndex);
     handleIndexChange(nextIndex);
   };
@@ -214,16 +226,47 @@ export default function SharedModal({
         </div>
 
         {/* Text Content Area: Occupies bottom 40% */}
-        <div className="flex-[0.4_0.4_40%] overflow-y-auto p-8 lg:p-10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin size={14} className="text-orange-300" />
-              <span className="text-[11px] font-extrabold text-stone-400 uppercase tracking-[0.2em]">
-                {event.location_name}
-              </span>
+        <div className="flex-[0.4_0.4_40%] p-8 lg:p-10 flex flex-col justify-between overflow-hidden">
+          <div className="flex flex-col flex-grow overflow-hidden">
+            
+            {/* Meta Info (Location & Date) */}
+            <div className="flex items-center w-full mb-2 flex-shrink-0 text-stone-400">
+              {event.location_name && (
+                <div className="flex items-center gap-1">
+                  <MapPin size={14} className="text-orange-300" />
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.2em]">
+                    {event.location_name}
+                  </span>
+                </div>
+              )}
+              
+              {/* 💡 날짜 영역이 항상 우측 끝에 붙도록 ml-auto와 shrink-0 추가 */}
+              {(event.date || event.event_date) && (
+                <div className="flex items-center opacity-80 ml-auto shrink-0">
+                  <span className="text-[10.5px] font-bold tracking-widest uppercase flex items-center gap-1">
+                    <Calendar size={11} className="text-stone-400" />
+                    {event.date || event.event_date}
+                  </span>
+                </div>
+              )}
             </div>
-            <h3 className="text-xl font-bold text-stone-800 mb-4">{event.title}</h3>
-            <p className="text-stone-500/90 text-sm leading-relaxed">{event.content}</p>
+            
+            {/* 2. 타이틀 영역: 무조건 다 보이도록 text-[19px] + break-keep 적용 */}
+            <h3 className="text-[19px] font-bold text-stone-800 mb-3 break-keep flex-shrink-0 leading-snug">
+              {event.title}
+            </h3>
+            
+            {/* 본문 스크롤 영역 */}
+            <div className="overflow-y-auto flex-grow pr-1 text-stone-500/90 text-sm leading-relaxed whitespace-pre-wrap">
+              <p>
+                {event.content?.split(/\\n/g).map((line: string, index: number) => (
+                  <span key={index}>
+                    {line}
+                    {index < event.content.split(/\\n/g).length - 1 && <br />}
+                  </span>
+                ))}
+              </p>
+            </div>
           </div>
 
           {/* Footer Navigation: Switch between previous/next posts in timeline */}
