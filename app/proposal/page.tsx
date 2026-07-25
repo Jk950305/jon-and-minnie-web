@@ -1,7 +1,7 @@
 'use client';
 
 import '@/styles/map-style.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -17,7 +17,8 @@ import SharedModal from './SharedModal';
 
 const libraries: any = ['marker'];
 
-export default function ProposalPage() {
+// 💡 1. useSearchParams를 사용하는 실제 콘텐츠 컴포넌트
+function ProposalContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
@@ -26,7 +27,6 @@ export default function ProposalPage() {
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState(false);
 
-  // 💡 URL의 ?tab= 파라미터를 읽어 초기 탭 결정
   const [currentTab, setCurrentTab] = useState<'home' | 'map' | 'messages' | 'game' | 'profile'>(() => {
     const validTabs = ['home', 'map', 'messages', 'game', 'profile'];
     return validTabs.includes(tabParam || '') ? (tabParam as any) : 'home';
@@ -51,7 +51,6 @@ export default function ProposalPage() {
     }
   }, []);
 
-  // 💡 브라우저 뒤로가기/앞으로가기 감지 시 쿼리 파라미터 동기화
   useEffect(() => {
     const validTabs = ['home', 'map', 'messages', 'game', 'profile'];
     if (validTabs.includes(tabParam || '')) {
@@ -65,7 +64,6 @@ export default function ProposalPage() {
     }
   }, [tabParam]);
 
-  // 💡 [핵심] 홈 탭에서 뒤로가기(백제스처) 발생 시 루트 페이지('/')로 강제 이동
   useEffect(() => {
     const handlePopState = () => {
       if (currentTab === 'home') {
@@ -142,15 +140,12 @@ export default function ProposalPage() {
     }
   };
 
-  // 💡 [핵심] 탭 변경 시 히스토리 스택 최적화
   const handleTabChange = async (tab: 'home' | 'map' | 'messages' | 'game' | 'profile') => {
     if (tab === 'messages' && !isMessageUnlocked) return;
     if (currentTab === tab) return;
 
     setCurrentTab(tab);
 
-    // 홈 탭이 아닌 다른 탭 간의 이동일 경우 replace를 사용하여 스택이 깊어지는 것을 방지
-    // 이렇게 하면 어떤 탭에 있든 뒤로가기를 한 번 누르면 무조건 홈 탭으로 돌아갑니다.
     if (tab === 'home') {
       router.push(`?tab=home`, { scroll: false });
     } else {
@@ -390,5 +385,14 @@ export default function ProposalPage() {
         })}
       </div>
     </motion.div>
+  );
+}
+
+// 💡 2. Next.js 빌드 에러 방지를 위해 Suspense로 감싸는 메인 페이지 컴포넌트
+export default function ProposalPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProposalContent />
+    </Suspense>
   );
 }
