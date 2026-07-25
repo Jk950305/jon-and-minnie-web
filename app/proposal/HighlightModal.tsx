@@ -16,7 +16,7 @@ interface HighlightModalProps {
   activeYear: string;
   allHighlights: any[];
   onYearChange: (data: { items: HighlightItem[], year: string }, direction: 'next' | 'prev') => void;
-  transitionState: { isAnimating: boolean; direction: 'next' | 'prev' | null; displayYear: string }; // 💡 추가됨
+  transitionState: { isAnimating: boolean; direction: 'next' | 'prev' | null; displayYear: string };
   onClose: () => void;
 }
 
@@ -40,7 +40,10 @@ export default function HighlightModal({
   const touchStartTime = useRef<number>(0);
   
   const STORY_DURATION = 5000;
-  const currentItem = items[currentStoryIndex];
+
+  // 💡 [핵심 수정] items 배열 길이에 맞춰 안전한 인덱스를 보장합니다.
+  const safeStoryIndex = Math.min(currentStoryIndex, items.length - 1);
+  const currentItem = items[safeStoryIndex] || items[0];
 
   // activeYear가 바뀔 때 인덱스 초기화
   useEffect(() => {
@@ -50,7 +53,7 @@ export default function HighlightModal({
 
   const nextStory = () => {
     setIsPaused(false);
-    if (currentStoryIndex < items.length - 1) {
+    if (safeStoryIndex < items.length - 1) {
       setProgress(0);
       setCurrentStoryIndex((prev) => prev + 1);
     } else {
@@ -60,7 +63,7 @@ export default function HighlightModal({
 
   const prevStory = () => {
     setIsPaused(false);
-    if (currentStoryIndex > 0) {
+    if (safeStoryIndex > 0) {
       setProgress(0);
       setCurrentStoryIndex((prev) => prev - 1);
     } else {
@@ -72,7 +75,7 @@ export default function HighlightModal({
     const currentYearIndex = allHighlights.findIndex((h) => h.year === activeYear);
     if (currentYearIndex < allHighlights.length - 1) {
       const nextGroup = allHighlights[currentYearIndex + 1];
-      onYearChange({ items: nextGroup.items, year: nextGroup.year }, 'next'); // 💡 방향 인자 추가
+      onYearChange({ items: nextGroup.items, year: nextGroup.year }, 'next');
     } else {
       onClose();
     }
@@ -82,12 +85,12 @@ export default function HighlightModal({
     const currentYearIndex = allHighlights.findIndex((h) => h.year === activeYear);
     if (currentYearIndex > 0) {
       const prevGroup = allHighlights[currentYearIndex - 1];
-      onYearChange({ items: prevGroup.items, year: prevGroup.year }, 'prev'); // 💡 방향 인자 추가
+      onYearChange({ items: prevGroup.items, year: prevGroup.year }, 'prev');
     }
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (transitionState.isAnimating) return; // 애니메이션 도중 터치 씹힘 방지
+    if (transitionState.isAnimating) return;
     touchStartX.current = e.touches[0].clientX;
     touchStartTime.current = Date.now();
     setIsPaused(true);
@@ -127,13 +130,13 @@ export default function HighlightModal({
   useEffect(() => {
     videoRefs.current.forEach((video, index) => {
       if (!video) return;
-      if (index === currentStoryIndex && !isPaused && !transitionState.isAnimating) {
+      if (index === safeStoryIndex && !isPaused && !transitionState.isAnimating) {
         video.play().catch(() => {});
       } else {
         video.pause();
       }
     });
-  }, [currentStoryIndex, isPaused, transitionState.isAnimating]);
+  }, [safeStoryIndex, isPaused, transitionState.isAnimating]);
 
   // Timer and progress bar logic
   useEffect(() => {
@@ -154,7 +157,7 @@ export default function HighlightModal({
       if (nextTimeoutRef.current) clearTimeout(nextTimeoutRef.current);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
-  }, [currentStoryIndex, isPaused, transitionState.isAnimating]);
+  }, [safeStoryIndex, isPaused, transitionState.isAnimating]);
 
   // Lock scroll when modal is open
   useEffect(() => {
@@ -162,11 +165,8 @@ export default function HighlightModal({
     return () => { document.body.style.overflow = 'unset'; };
   }, []);
 
-  // 💡 인스타 스토리 큐브 이펙트용 스타일 동적 계산
   const getCubeStyle = () => {
     if (!transitionState.isAnimating) return {};
-    
-    // 다음 연도로 넘어가면 오프스크린(-90도 회전), 이전 연도로 가면 온스크린(90도 회전) 느낌 유도
     const rotation = transitionState.direction === 'next' ? 95 : -95;
     return {
       transform: `rotateY(${rotation}deg) scale(0.85)`,
@@ -177,7 +177,6 @@ export default function HighlightModal({
   };
 
   return (
-    // 💡 부모 컨테이너에 3D 원근 뷰포트(perspective-1000)를 제공합니다.
     <div 
       className="fixed inset-0 z-[100] bg-stone-950 flex items-center justify-center animate-fade-in backdrop-blur-sm perspective-1000 select-none overflow-hidden"
       onClick={onClose}
@@ -196,8 +195,8 @@ export default function HighlightModal({
                 <div 
                   className="h-full bg-white rounded-full"
                   style={{
-                    width: index === currentStoryIndex ? `${progress}%` : index < currentStoryIndex ? '100%' : '0%',
-                    transition: index === currentStoryIndex ? 'width 30ms linear' : 'none'
+                    width: index === safeStoryIndex ? `${progress}%` : index < safeStoryIndex ? '100%' : '0%',
+                    transition: index === safeStoryIndex ? 'width 30ms linear' : 'none'
                   }} 
                 />
               </div>
@@ -213,7 +212,7 @@ export default function HighlightModal({
           </div>
         </div>
 
-        {/* Media Viewer 컨테이너에 3D 스타일 주입 */}
+        {/* Media Viewer */}
         <div 
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -224,7 +223,7 @@ export default function HighlightModal({
             <div
               key={index}
               className={`absolute inset-0 w-full h-full flex items-center justify-center transition-opacity duration-200 ${
-                index === currentStoryIndex ? 'opacity-100 z-10' : 'opacity-0 -z-10 pointer-events-none'
+                index === safeStoryIndex ? 'opacity-100 z-10' : 'opacity-0 -z-10 pointer-events-none'
               }`}
             >
               {item.asset.asset_type === 'video' ? (
@@ -243,29 +242,29 @@ export default function HighlightModal({
 
           {/* Bottom Info Area */}
           <div className="absolute bottom-0 inset-x-0 p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent text-white flex flex-col gap-2.5 z-[110] pointer-events-none">
-            {currentItem.eventLocation && (
+            {currentItem?.eventLocation && (
               <span className="text-[11px] flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full w-fit backdrop-blur-md mb-1">
                 <MapPin size={10} /> {currentItem.eventLocation}
               </span>
             )}
             
             <h3 className="text-[19px] font-bold text-white break-keep leading-snug">
-              {currentItem.eventTitle}
+              {currentItem?.eventTitle}
             </h3>
             
             <p className="text-[15px] text-white/90 leading-relaxed font-normal whitespace-pre-wrap break-all mt-0.5">
-              {currentItem.eventContent?.split(/\\n/g).map((line: string, index: number) => (
+              {currentItem?.eventContent?.split(/\\n/g).map((line: string, index: number) => (
                 <span key={index}>
                   {line}
                   {index < currentItem.eventContent.split(/\\n/g).length - 1 && <br />}
                 </span>
               ))}
             </p>
-            <span className="text-[10px] text-white/40 mt-1">{currentItem.eventDate}</span>
+            <span className="text-[10px] text-white/40 mt-1">{currentItem?.eventDate}</span>
           </div>
         </div>
 
-        {/* 💡 [핵심 추가] 연도 바뀔 때 가운데에 노출되는 대형 텍스트 안내 오버레이 */}
+        {/* Transition Overlay */}
         {transitionState.isAnimating && (
           <div className="absolute inset-0 bg-stone-950/40 z-[150] flex flex-col items-center justify-center pointer-events-none animate-fade-in">
             <div className="bg-black/60 px-6 py-4 rounded-2xl backdrop-blur-md border border-white/10 flex flex-col items-center justify-center scale-95 transition-transform duration-300">
@@ -279,10 +278,10 @@ export default function HighlightModal({
           </div>
         )}
 
-        {/* Navigation Buttons (Desktop) */}
+        {/* Navigation Buttons */}
         <button 
           onClick={(e) => { e.stopPropagation(); prevStory(); }} 
-          className={`absolute -left-16 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 hidden lg:block transition-all ${allHighlights.findIndex(h => h.year === activeYear) === 0 && currentStoryIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          className={`absolute -left-16 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 hidden lg:block transition-all ${allHighlights.findIndex(h => h.year === activeYear) === 0 && safeStoryIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
         >
           <ChevronLeft size={32} />
         </button>
