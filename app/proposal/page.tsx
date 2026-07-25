@@ -257,7 +257,7 @@ function ProposalContent() {
                 <Heart size={15} className="text-white fill-white" />
               </div>
               <h1 className="text-base font-serif font-bold tracking-widest text-stone-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                OUR STORY
+                JON & MINNIE
               </h1>
             </div>
           </div>
