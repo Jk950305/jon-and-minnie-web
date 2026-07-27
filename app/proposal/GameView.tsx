@@ -11,6 +11,7 @@ const GAME_HEIGHT = 600;
 const WALL_THICKNESS = 60;
 const DROP_Y = 40;
 
+// 1. 레벨 10(인덱스 10) 과일 추가
 const FRUITS = [
   { level: 0, radius: 12, color: '#ff1a1a', name: 'Level 1' },
   { level: 1, radius: 18, color: '#ff9933', name: 'Level 2' },
@@ -22,12 +23,14 @@ const FRUITS = [
   { level: 7, radius: 62, color: '#dda0dd', name: 'Level 8' },
   { level: 8, radius: 70, color: '#ba55d3', name: 'Level 9' },
   { level: 9, radius: 80, color: '#32cd32', name: 'Level 10' },
+  { level: 10, radius: 95, color: '#ff4500', name: 'Level 11' }, // 새로 추가된 최종 과일
 ];
 
-const ALLOWED_NEXT_LEVELS = [0, 1, 2];
+const ALLOWED_NEXT_LEVELS = [0,1,2];
 const getRandomNextLevel = () => ALLOWED_NEXT_LEVELS[Math.floor(Math.random() * ALLOWED_NEXT_LEVELS.length)];
 
-// [신규] 부모 컴포넌트에서 이벤트를 받을 수 있도록 Props 인터페이스 추가
+
+
 interface GameViewProps {
   onGameClear?: () => void;
 }
@@ -39,6 +42,8 @@ export default function GameView({ onGameClear }: GameViewProps) {
   const imageCacheRef = useRef<Record<number, HTMLImageElement>>({});
 
   const isGameOverRef = useRef(false);
+  const proposeSuccessRef = useRef(false); // 물리 엔진 안에서 성공 여부를 즉각 판단하기 위한 Ref
+
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [proposeSuccess, setProposeSuccess] = useState(false);
@@ -50,27 +55,36 @@ export default function GameView({ onGameClear }: GameViewProps) {
   
   const [showExitModal, setShowExitModal] = useState(false);
 
+  const [isBlurActive, setIsBlurActive] = useState(false);
+
+  useEffect(() => {
+    if (proposeSuccess) {
+      const timer = setTimeout(() => setIsBlurActive(true), 2000);
+      return () => clearTimeout(timer);
+    } else {
+      setIsBlurActive(false);
+    }
+  }, [proposeSuccess]);
+
   useEffect(() => {
     isGameOverRef.current = isGameOver;
   }, [isGameOver]);
 
   useEffect(() => {
+    proposeSuccessRef.current = proposeSuccess;
     if (proposeSuccess && onGameClear) {
       onGameClear();
     }
   }, [proposeSuccess, onGameClear]);
 
-  // 💡 [추가] 게임 중 뒤로가기/제스처 감지 시 팝업 띄우기
   useEffect(() => {
     if (isGameOver || proposeSuccess) return;
 
-    // 히스토리에 방패(가드) 상태 쌓기
     window.history.pushState({ gameGuard: true }, '', window.location.href);
 
     const handlePopState = () => {
-      if (!isGameOverRef.current && !proposeSuccess) {
+      if (!isGameOverRef.current && !proposeSuccessRef.current) {
         setShowExitModal(true);
-        // 팝업이 뜬 상태에서 뒤로가기로 풀린 스택을 다시 잠금
         window.history.pushState({ gameGuard: true }, '', window.location.href);
       }
     };
@@ -81,30 +95,14 @@ export default function GameView({ onGameClear }: GameViewProps) {
     };
   }, [isGameOver, proposeSuccess]);
 
-  // 💡 취소 누를 때 (팝업 닫고 게임 유지)
   const handleCancelExit = () => {
     setShowExitModal(false);
   };
 
-  // 💡 확인 누를 때 (무조건 홈탭으로 이동)
   const handleConfirmExit = () => {
     setShowExitModal(false);
     router.replace('?tab=home');
   };
-
-
-
-  useEffect(() => {
-    isGameOverRef.current = isGameOver;
-  }, [isGameOver]);
-
-  // [신규] 게임 클리어 (proposeSuccess)가 true가 되면 부모의 onGameClear 실행
-  useEffect(() => {
-    if (proposeSuccess && onGameClear) {
-      onGameClear();
-    }
-  }, [proposeSuccess, onGameClear]);
-
 
   const initWorld = useCallback((engine: Matter.Engine) => {
     const { Bodies, Composite } = Matter;
@@ -196,6 +194,7 @@ export default function GameView({ onGameClear }: GameViewProps) {
           (bodyB as any).isMerging = true;
           Composite.remove(engine.world, [bodyA, bodyB]);
 
+          // 2. 새로운 레벨 생성 (현재 인덱스가 마지막보다 작을 때만 합치기)
           if (level < FRUITS.length - 1) {
             const nextLevel = level + 1;
             setScore((prev) => prev + (nextLevel * 10));
@@ -204,8 +203,24 @@ export default function GameView({ onGameClear }: GameViewProps) {
               { restitution: 0.2, label: nextLevel.toString(), render: { visible: false }, plugin: { createdAt: Date.now() } }
             );
             Composite.add(engine.world, newFruit);
-          } else if (level === FRUITS.length - 1) {
-            setProposeSuccess(true);
+
+            // 방금 만들어진 과일이 마지막 레벨(Level 10)일 경우 클리어 처리
+            if (nextLevel === FRUITS.length - 1) {
+              setProposeSuccess(true);
+              proposeSuccessRef.current = true;
+              
+              // 10레벨 과일이 만들어지는 모습이 렌더링되도록 살짝(100ms) 여유를 둔 뒤 게임 프리즈
+              setTimeout(() => {
+                if (engineRef.current) {
+                  engineRef.current.timing.timeScale = 0; // 물리 흐름 정지
+                  Composite.allBodies(engineRef.current.world).forEach((body) => {
+                    //Matter.Body.setStatic(body, true); // 모든 물체 얼리기
+                    Matter.Body.setVelocity(body, { x: 0, y: 0 });
+                    Matter.Body.setAngularVelocity(body, 0);
+                  });
+                }
+              }, 100);
+            }
           }
         }
       });
@@ -223,7 +238,8 @@ export default function GameView({ onGameClear }: GameViewProps) {
         return body.position.y < 80 && body.velocity.y < 0.5 && body.velocity.x < 0.5;
       });
 
-      if (isOver && !proposeSuccess) {
+      // 클리어 상태가 아닐 때만 게임 오버 판단
+      if (isOver && !proposeSuccessRef.current) {
         setIsGameOver(true);
         engine.timing.timeScale = 0;
         Composite.allBodies(engine.world).forEach((body) => {
@@ -243,7 +259,7 @@ export default function GameView({ onGameClear }: GameViewProps) {
       Runner.stop(runner);
       Engine.clear(engine);
     };
-  }, [initWorld, proposeSuccess, imagesLoaded]);
+  }, [initWorld, imagesLoaded]); // proposeSuccess 의존성을 제거하여 불필요한 재시작 방지
 
   const getPhysicsX = useCallback((clientX: number) => {
     if (!sceneRef.current) return GAME_WIDTH / 2;
@@ -286,8 +302,13 @@ export default function GameView({ onGameClear }: GameViewProps) {
     engineRef.current.timing.timeScale = 1;
     Matter.Composite.clear(engineRef.current.world, false);
     initWorld(engineRef.current);
-    setScore(0); setIsGameOver(false); setProposeSuccess(false); setIsDropping(false);
-    setCurrentFruitLevel(getRandomNextLevel()); setNextFruitLevel(getRandomNextLevel());
+    setScore(0); 
+    setIsGameOver(false); 
+    setProposeSuccess(false); 
+    proposeSuccessRef.current = false;
+    setIsDropping(false);
+    setCurrentFruitLevel(getRandomNextLevel()); 
+    setNextFruitLevel(getRandomNextLevel());
   };
 
   if (!imagesLoaded) {
@@ -304,7 +325,7 @@ export default function GameView({ onGameClear }: GameViewProps) {
             <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-2xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] border border-stone-200 flex flex-col items-center justify-center shrink-0">
                 <span className="text-[9px] font-bold text-stone-400 tracking-widest mb-1.5">NEXT</span>
                 <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full">
-                <img src={imageCacheRef.current[nextFruitLevel].src} className="w-full h-full object-cover" />
+                  <img src={imageCacheRef.current[nextFruitLevel]?.src} className="w-full h-full object-cover" />
                 </div>
             </div>
         </div>
@@ -335,7 +356,8 @@ export default function GameView({ onGameClear }: GameViewProps) {
         <div className="relative w-full max-w-[450px] aspect-[380/600]">
             <div
                 ref={sceneRef}
-                className={`w-full h-full rounded-2xl overflow-hidden bg-white shadow-[0_10px_40px_rgba(0,0,0,0.1)] border-[10px] border-white cursor-crosshair touch-none transition-opacity duration-500 ${proposeSuccess ? 'opacity-30' : 'opacity-100'}`}
+                // 3. 투명도는 낮추지 않고 그대로 유지하여 게임화면이 배경으로 보이도록 함 (opacity-100 유지)
+                className="w-full h-full rounded-2xl overflow-hidden bg-white shadow-[0_10px_40px_rgba(0,0,0,0.1)] border-[10px] border-white cursor-crosshair touch-none"
                 onPointerDown={(e) => { (e.target as HTMLElement).setPointerCapture(e.pointerId); handleMove(e); }}
                 onPointerMove={handleMove}
                 onPointerUp={handleDrop}
@@ -353,27 +375,54 @@ export default function GameView({ onGameClear }: GameViewProps) {
                   transform: 'translate(-50%, -50%)',
                 }}
             >
-                <img src={imageCacheRef.current[currentFruitLevel].src} className="w-full h-full object-cover" />
+                <img src={imageCacheRef.current[currentFruitLevel]?.src} className="w-full h-full object-cover" />
             </div>
             )}
 
-            {/* [변경] 게임 클리어 시 메세지 언락 화면 */}
+            {/* 3 & 4. 메세지 창 디자인 변경: 배경 blur 적용 및 텍스트를 버튼형태에서 일반 텍스트 형태로 수정 */}
+            {/* 게임 클리어 시 메세지 언락 화면 */}
             {proposeSuccess && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-50 p-6 text-center bg-white/80 backdrop-blur-sm rounded-xl">
-                <MessageCircle className="text-orange-200 w-20 h-20 mb-4 animate-bounce" fill="currentColor" />
-                <h3 className="text-2xl font-bold text-stone-800 mb-2">축하합니다!</h3>
-                <p className="text-stone-600 font-medium mb-6">숨겨져 있던 메뉴가 잠금 해제되었습니다.</p>
-                <div className="px-8 py-3 bg-orange-300 text-white rounded-full font-bold shadow-lg">
-                  메뉴에서 확인해보세요!
+              <div className="absolute inset-0 z-50 flex items-center justify-center p-6 text-center">
+                {/* 1. 서서히 블러가 진해지는 배경 레이어 (transition-all duration-1000) */}
+                <div 
+                  className={`absolute inset-0 transition-all duration-1000 ease-out ${
+                    isBlurActive 
+                      ? 'backdrop-blur-md bg-white/25' // 최종 블러 상태 (희미한 흰색 + 적당한 블러)
+                      : 'backdrop-blur-none bg-white/0'  // 처음 시작 상태 (블러 없음, 투명)
+                  }`} 
+                />
+
+                {/* 2. 메시지 박스 (배경이 과하지 않아 뒤의 멈춘 게임 화면이 잘 보임) */}
+                <div 
+                  className={`relative z-10 flex flex-col items-center bg-white/90 p-8 rounded-3xl shadow-2xl ring-1 ring-black/5 transition-all duration-700 ease-out ${
+                    isBlurActive ? 'opacity-90 scale-100' : 'opacity-0 scale-95'
+                  }`}
+                >
+                  <MessageCircle 
+                    className="text-orange-500 w-16 h-16 mb-5 animate-bounce" 
+                    fill="currentColor" 
+                    strokeWidth={1.5}
+                  />
+                  <h3 className="text-3xl font-extrabold text-stone-900 mb-3 tracking-tight">
+                    축하합니다!
+                  </h3>
+                  <p className="text-lg text-stone-700 font-semibold mb-1.5">
+                    숨겨져 있던 메뉴가 잠금 해제되었습니다.
+                  </p>
+                  <p className="text-sm text-stone-500 font-medium">
+                    메뉴에서 확인해보세요!
+                  </p>
                 </div>
-            </div>
+              </div>
             )}
 
             {isGameOver && !proposeSuccess && (
-            <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center z-40">
+            <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center z-40 animate-in fade-in duration-300">
                 <h3 className="text-3xl font-bold text-white mb-2">GAME OVER</h3>
                 <p className="text-xl text-white font-medium mb-6">Final Score: {score}</p>
-                <button onClick={resetGame} className="px-8 py-3 bg-white text-stone-800 rounded-full font-bold">Try Again</button>
+                <button onClick={resetGame} className="px-8 py-3 bg-white text-stone-800 rounded-full font-bold shadow-lg hover:bg-stone-100 transition-colors">
+                  Try Again
+                </button>
             </div>
             )}
         </div>
