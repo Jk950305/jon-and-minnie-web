@@ -14,24 +14,24 @@ const BGM_FILE = '/assets/True_Song.mp3';
 
 // Stage 1: Memory Tunnel (Focus on storytelling & shared history)
 const PROPOSAL_MESSAGES = [
-  "안녕 나의 아기공주민희야!",
-  "우리 연애하기 전에 밤늦게 만나 서로를 알아가던 설렘들 기억나?",
-  "깊은 대화를 나누며 서로에게 조금씩 스며들던 그 밤들,",
-  "그렇게 우리가 연인이 되었던 순간은 내 생애 가장 큰 행운이었어.",
+  "안녕 공주! 진심이 담긴 노래 대신에 진심이 담긴 편지를 써보려 해..",
+  "우리 연애하기 전부터 밤늦게 만나서 얘기 나눴던 거 기억나?",
+  "걱정도 많고 설렘도 가득했던 그 시간들이 벌써 7년이나 지났어.",
+  "그렇게 2019년 10월 25일 우리가 연인이 되었던 날이 아직도 생생해.",
   "때로는 서툴러 다투기도 하고 상처 주고 아프게 할 때도 있었지만,",
   "그 시간들이 있었기에 지금 우리가 서로를 더 깊이 이해할 수 있는 거겠지?",
   "장난치며 수다 떨던 가벼운 일상부터 진지한 고민까지,",
   "민희가 환하게 웃을 때면, 내 세상도 덩달아 눈부시게 밝아졌어.",
-  "맛있는 걸 먹을 때면 자연스레 네 생각이 가장 먼저 났고,",
-  "예쁜 곳에 갈 때면 '나중에 민희랑 꼭 다시 와야지' 다짐하곤 했어.",
-  "어느새 나의 모든 계절 속에는 너라는 온기가 가득 채워져 있더라.",
+  "예쁜 곳에 갈 때면 자연스레 공주 생각이 가장 먼저 났고,",
+  "맛있는 걸 먹을 때면 '민희랑 꼭 다시 와야지' 다짐하곤 했어.",
+  "어느새 나의 모든 삶 속에는 민희가 함께 녹아들어 있더라.",
   "너와 함께 보낸 날들은 인생에서 가장 따뜻한 봄이었고,",
   "가장 시원한 여름이자, 포근하고 아름다운 가을과 겨울이었어.",
   "너무 신기한 게 시간이 흐를수록 민희를 향한 마음이 점점 커진다는 거야.",
   "익숙함 속에서 피어나는 이 편안함이 정말 소중하다고 생각해.",
   "많이 부족한 나를 따뜻하게 안아주고 사랑해줘서 너무 고마워.",
   "앞으로도 민희가 언제나 기댈 수 있게 옆에서 든든한 나무가 되어줄게.",
-  "지금까지 우리가 함께 그려온 이 수많은 추억들로 인해,",
+  "지금까지 우리가 함께 지내온 이 수많은 추억들로 인해,",
   "앞으로 두 손 맞잡고 만들어갈 우리의 내일이 너무나도 기대가 돼.",
   "서로를 향한 마음이 깊어져 온 이 모든 추억들을 되돌아보면,",
   "나는 매일 민희를 점점 더 많이 사랑하고 있음을 느껴."
@@ -40,27 +40,25 @@ const PROPOSAL_MESSAGES = [
 // Stage 2: Proposal Letter (Focus on future promises & sincerity)
 const PROPOSAL_TEXT = 
 `세상에서 내가 가장 사랑하는 아기공주민희야!
-우리가 함께한 지난 시간들을 가만히 되새겨보니,
-이제 다가올 내일이 두렵기보다는 설렘으로 가득 차.
-서로의 손을 꼭 잡고 묵묵히 걸어갈 우리의 길 위에서,
-어떤 계절이 와도 우리는 지금처럼 잘 해낼 거라 믿어.
-매일 아침 눈을 뜨면 가장 먼저 너에게 입맞추고,
-잠들기 전 하루의 끝을 너와 온전히 나누는 소중한 일들,
+우리가 함께한 지난 시간들을 가만히 되돌아보니,
+이제 다가올 내일이 두렵기보다는 설렘으로 가득해.
+서로의 손을 꼭 잡고 앞으로 걸어갈 우리의 길 위에서,
+어떠한 상황 속에서도 우리는 지금처럼 잘 해낼 거라 믿어.
+매일 아침 눈을 뜨면 가장 먼저 반갑게 손 흔들며 인사하고,
+잠들기 전 그날 하루의 일상을 서로 공유하며 얘기하는 일들,
 그 평범하고 소소한 일상이 우리에겐 특별한 기적이 될 거야.
-너의 곁에서 언제나 단단하고 든든한 안식처가 되어줄게.
-우리가 함께 맞이할 모든 시간을 온 마음으로 사랑하며,
-그 안에서 우리의 미래를 조금 더 구체적으로 그려보고 싶어.
+너의 곁에서 언제나 든든한 버팀목이자 안식처가 되어줄게.
+우리가 함께 맞이할 모든 순간순간마다 온 마음으로 사랑하면서
+우리의 미래를 조금 더 구체적으로 계획해 보고 싶어.
 내 인생에서 민희가 없는 미래는 상상조차 할 수 없을 만큼,
-너와 함께 그려나갈 우리의 내일이 세상 무엇보다 기대돼.
-영원이라는 약속을 우리 서로 천천히 정성껏 채워가고,
+너와 함께 그려 나갈 우리의 내일이 세상 무엇보다 기대돼.
+영원이라는 약속을 우리 서로 천천히 정성껏 채워 가고,
 앞으로도 항상 같은 곳을 바라보며 나란히 걷자!
 나의 어제이자 오늘, 그리고 가장 눈부신 내일인 너에게,
-이제는 연인을 넘어 평생을 함께할 동반자가 되어줬으면 해.`;
+이제는 연인을 넘어 평생을 함께할 내 편이 되어줬으면 해.`;
 
 // Automatically convert to an array based on line breaks (\n)
 const letterLines = PROPOSAL_TEXT.split('\n').filter(line => line.trim() !== '');
-
-// ==========================================
 
 interface Asset {
   url: string;
@@ -72,33 +70,23 @@ export default function CinematicProposalView() {
   const [stage, setStage] = useState<number>(0);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [isReady, setIsReady] = useState<boolean>(false);
+  
+  const [msgIndex, setMsgIndex] = useState<number>(0);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const timerStage2 = useRef<NodeJS.Timeout | null>(null);
-  const timerStage3 = useRef<NodeJS.Timeout | null>(null);
 
   // 1. Load Supabase Storage Data
   useEffect(() => {
     const fetchAssets = async () => {
-      //console.log("[Step 1] Starting Supabase data load...");
-      
       try {
-        //console.log(`[Request] Requesting list for bucket: '${BUCKET_NAME}'...`);
         const { data, error } = await supabase.storage.from(BUCKET_NAME).list('');
         
-        if (error) {
-          //console.error("❌ [Error] Failed to load data:", error);
-          throw error;
-        }
-
-        //console.log("[Response] Raw data received from Supabase:", data);
+        if (error) throw error;
 
         if (data && data.length > 0) {
           const sortedData = data
             .filter(file => file.name && !file.name.startsWith('.') && file.name !== '.emptyFolder')
             .sort((a, b) => a.name.localeCompare(b.name));
-
-          //console.log(`[Sort Complete] Found a total of ${sortedData.length} valid files:`, sortedData);
 
           const formattedAssets: Asset[] = sortedData.map(file => {
             const { data: { publicUrl } } = supabase.storage.from(BUCKET_NAME).getPublicUrl(file.name);
@@ -106,10 +94,7 @@ export default function CinematicProposalView() {
             return { url: publicUrl, type: isVideo ? 'video' : 'image', name: file.name };
           });
           
-          //console.log("[Final Assets Created] Ready to display on screen:", formattedAssets);
           setAssets(formattedAssets);
-        } else {
-          //console.warn("[Warning] Received data is empty! (Empty array)");
         }
       } catch (err) {
         console.error("[Exception Occurred]:", err);
@@ -119,14 +104,46 @@ export default function CinematicProposalView() {
     };
 
     fetchAssets();
-
-    return () => {
-      if (timerStage2.current) clearTimeout(timerStage2.current);
-      if (timerStage3.current) clearTimeout(timerStage3.current);
-    };
   }, []);
 
-  // 2. Cinematic Playback Logic
+  // 2-1. Stage 1 Timer Logic (Typewriter & Transition)
+  useEffect(() => {
+    if (stage === 1) {
+      setMsgIndex(0);
+      const intervalTime = (180000 - 2000) / PROPOSAL_MESSAGES.length;
+      let currentIdx = 0;
+
+      const timer = setInterval(() => {
+        currentIdx++;
+        if (currentIdx < PROPOSAL_MESSAGES.length) {
+          setMsgIndex(currentIdx);
+        } else {
+          clearInterval(timer);
+          setTimeout(() => {
+            setStage(2);
+          }, 2000);
+        }
+      }, intervalTime);
+
+      return () => clearInterval(timer);
+    }
+  }, [stage]);
+
+  // 2-2. Stage 2 Timer Logic (Transition)
+  useEffect(() => {
+    if (stage === 2) {
+      // 전체 편지 지속 시간(총 67초 대기 후 마지막 단계로)
+      const stageTimer = setTimeout(() => {
+        setStage(3);
+      }, 67000);
+
+      return () => {
+        clearTimeout(stageTimer);
+      };
+    }
+  }, [stage]);
+
+  // 3. Start Cinematic Playback
   const startCinematic = async () => {
     const { data } = await supabase
       .from('app_settings')
@@ -147,14 +164,10 @@ export default function CinematicProposalView() {
     }
 
     setTimeout(() => setStage(1), 3000);
-    timerStage2.current = setTimeout(() => setStage(2), 180000);
-    timerStage3.current = setTimeout(() => setStage(3), 247000);
   };
 
-  // 3. Replay (Return to start)
+  // 4. Replay (Return to start)
   const handleReplay = () => {
-    if (timerStage2.current) clearTimeout(timerStage2.current);
-    if (timerStage3.current) clearTimeout(timerStage3.current);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -167,10 +180,8 @@ export default function CinematicProposalView() {
 
   const tunnelDuration = 180000;
   const intervalPerAsset = tunnelAssets.length > 0 ? tunnelDuration / tunnelAssets.length : 7500;
-  const intervalPerMessage = PROPOSAL_MESSAGES.length > 0 ? tunnelDuration / PROPOSAL_MESSAGES.length : 7500;
 
   return (
-    // Note: Changed h-full to h-[100dvh] to prevent clipping by mobile address bar/menu bar
     <div className="w-full h-[100dvh] relative overflow-hidden bg-black flex items-center justify-center font-sans">
       <audio ref={audioRef} src={BGM_FILE} />
 
@@ -214,7 +225,7 @@ export default function CinematicProposalView() {
           </motion.div>
         )}
 
-        {/* ================= STAGE 1: Memory Tunnel (Slide panning applied inside photo) ================= */}
+        {/* ================= STAGE 1: Memory Tunnel ================= */}
         {stage === 1 && (
           <motion.div key="stage-1" className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center">
 
@@ -245,8 +256,8 @@ export default function CinematicProposalView() {
                       y: panDirectionY
                     }}
                     transition={{
-                      duration: 12, // Total duration
-                      times: [0, 0.1, 0.9, 1], // Appears at 10% time, maintained until 90%, disappears quickly in the last 10% (prevents overlap)
+                      duration: 12,
+                      times: [0, 0.1, 0.9, 1],
                       ease: "easeInOut",
                       delay: (index * intervalPerAsset) / 1000
                     }}
@@ -270,34 +281,44 @@ export default function CinematicProposalView() {
                 );
               })}
               
-              {/* Overlay on image (inner shadow effect) */}
+              {/* Overlay on image */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.8)_100%)] z-10" />
             </div>
 
-            {/* 20-line message container */}
-            <div className="mt-8 md:mt-12 text-center w-full max-w-xl px-6 relative z-20 h-[100px] flex items-center justify-center">
-              {PROPOSAL_MESSAGES.map((message, index) => {
-                const messageDurationSec = intervalPerMessage / 1000;
-                return (
+            {/* Stage 1 Message Container (Typewriter) */}
+            <div className="mt-8 md:mt-12 w-full max-w-[90%] md:max-w-xl mx-auto relative z-20 h-[100px]">
+              <AnimatePresence mode="wait">
+                {PROPOSAL_MESSAGES[msgIndex] && (
                   <motion.p
-                    key={`message-${index}`}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{
-                      opacity: [0, 1, 1, 0],
-                      y: [15, 0, 0, -15],
+                    key={msgIndex}
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: { staggerChildren: 0.06 }
+                      },
+                      exit: { opacity: 0, y: -10, transition: { duration: 0.5 } }
                     }}
-                    transition={{
-                      duration: messageDurationSec,
-                      delay: index * messageDurationSec,
-                      ease: "easeInOut",
-                      times: [0, 0.1, 0.9, 1]
-                    }}
-                    className="absolute text-white/90 text-[14px] md:text-lg lg:text-xl font-medium leading-[2.5] md:leading-[3] drop-shadow-md text-shadow-lg w-full break-keep"
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="absolute top-1/2 -translate-y-1/2 left-0 right-0 px-4 text-white/95 text-[15px] md:text-lg lg:text-xl font-medium leading-[1.7] drop-shadow-md text-shadow-lg text-center break-keep"
                   >
-                    {message}
+                    {PROPOSAL_MESSAGES[msgIndex].split("").map((char, charIndex) => (
+                      <motion.span
+                        key={charIndex}
+                        variants={{
+                          hidden: { opacity: 0 },
+                          visible: { opacity: 1 }
+                        }}
+                      >
+                        {char === " " ? "\u00A0" : char}
+                      </motion.span>
+                    ))}
                   </motion.p>
-                );
-              })}
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
@@ -309,20 +330,38 @@ export default function CinematicProposalView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 3 } }}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center px-2 overflow-hidden bg-black"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4 md:px-8 py-6 overflow-hidden bg-black"
           >
-            <div className="w-full flex flex-col items-center text-center">
+            {/* 💡 Stage 2 텍스트를 정중앙에 위치하도록 items-center와 text-center 클래스를 적용했습니다 */}
+            <div className="w-full max-w-2xl flex flex-col items-center justify-center h-full text-center">
               {letterLines.map((line, index) => (
                 <motion.p
                   key={`letter-${index}`}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 3, delay: index * 4, ease: "easeOut" }}
-                  className={`text-white/90 font-medium whitespace-nowrap text-[clamp(10px,3vw,20px)] md:text-xl drop-shadow-md text-shadow-lg
-                    ${index === 0 ? 'text-rose-200 text-[clamp(14px,4vw,24px)] md:text-2xl mb-8 md:mb-12' : 'mb-3 md:mb-5'}
-                  `}
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: { opacity: 1 }, 
+                    visible: { 
+                      opacity: 1, 
+                      transition: { 
+                        delayChildren: index * 3.4, // 각 줄이 시작되는 시간 간격
+                        staggerChildren: 0.05 
+                      } 
+                    }
+                  }}
+                  className="text-white/95 font-medium whitespace-nowrap drop-shadow-md text-shadow-lg tracking-tight text-[clamp(14px,3.8vw,18px)] md:text-[20px] lg:text-[22px] mb-1.5 md:mb-2 lg:mb-2.5"
                 >
-                  {line}
+                  {line.split("").map((char, charIndex) => (
+                    <motion.span
+                      key={charIndex}
+                      variants={{
+                        hidden: { opacity: 0, y: 3 }, 
+                        visible: { opacity: 1, y: 0 }
+                      }}
+                    >
+                      {char === " " ? "\u00A0" : char}
+                    </motion.span>
+                  ))}
                 </motion.p>
               ))}
             </div>
