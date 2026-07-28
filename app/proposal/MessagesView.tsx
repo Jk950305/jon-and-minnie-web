@@ -132,7 +132,6 @@ export default function CinematicProposalView() {
   // 2-2. Stage 2 Timer Logic (Transition)
   useEffect(() => {
     if (stage === 2) {
-      // 전체 편지 지속 시간(총 67초 대기 후 마지막 단계로)
       const stageTimer = setTimeout(() => {
         setStage(3);
       }, 67000);
@@ -285,8 +284,8 @@ export default function CinematicProposalView() {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.8)_100%)] z-10" />
             </div>
 
-            {/* Stage 1 Message Container (Typewriter) */}
-            <div className="mt-8 md:mt-12 w-full max-w-[98%] md:max-w-xl mx-auto relative z-20 flex items-center justify-center min-h-[80px] px-1 md:px-0">
+            {/* Stage 1 Message Container (사진과 동일한 가로폭 비율, 줄바꿈 방지) */}
+            <div className="mt-6 md:mt-8 w-[85%] max-w-[550px] mx-auto relative z-20 flex items-center justify-center min-h-[50px]">
               <AnimatePresence mode="wait">
                 {PROPOSAL_MESSAGES[msgIndex] && (
                   <motion.p
@@ -296,14 +295,14 @@ export default function CinematicProposalView() {
                       visible: {
                         opacity: 1,
                         y: 0,
-                        transition: { staggerChildren: 0.06 }
+                        transition: { staggerChildren: 0.04 }
                       },
-                      exit: { opacity: 0, y: -10, transition: { duration: 0.5 } }
+                      exit: { opacity: 0, y: -10, transition: { duration: 0.4 } }
                     }}
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="w-full text-white/95 text-[clamp(10px,2.5vw,20px)] md:text-lg lg:text-xl font-medium leading-[1.7] drop-shadow-md text-shadow-lg text-center whitespace-nowrap"
+                    className="w-full text-white/95 text-[clamp(11px,3.2vw,19px)] font-medium leading-[1.6] drop-shadow-md text-shadow-lg text-center whitespace-nowrap"
                   >
                     {PROPOSAL_MESSAGES[msgIndex].split("").map((char, charIndex) => (
                       <motion.span
@@ -330,14 +329,9 @@ export default function CinematicProposalView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 3 } }}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center py-6 overflow-hidden bg-black"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center py-4 overflow-hidden bg-black"
           >
-            {/* 
-               💡 수정된 정렬 방식: 
-               가장 긴 텍스트를 기준으로 컨테이너의 너비(w-fit)가 정해집니다.
-               그 후 각 줄(p 태그)에 flex justify-between을 걸어두어,
-               자연스럽고 이질감 없는 미세한 양쪽 정렬(완벽한 블록 형태)이 만들어지게 됩니다. 
-            */}
+            {/* 짧은 쪽(vmin)을 기준으로 반응형 확대/축소 적용하여 모바일에서도 꽉 차고 웅장하게 표시 */}
             <div className="w-full h-full flex flex-col items-center justify-center px-4 md:px-0">
               <div className="flex flex-col items-stretch w-fit max-w-full">
                 {letterLines.map((line, index) => (
@@ -355,7 +349,7 @@ export default function CinematicProposalView() {
                         } 
                       }
                     }}
-                    className="w-full flex justify-between text-white/95 font-medium whitespace-nowrap drop-shadow-md text-shadow-lg tracking-tight text-[clamp(10.5px,2.6vw,18px)] md:text-[20px] lg:text-[22px] mb-1.5 md:mb-2 lg:mb-2.5"
+                    className="w-full flex justify-between text-white/95 font-medium whitespace-nowrap drop-shadow-md text-shadow-lg tracking-tight text-[clamp(12px,2.6vmin,22px)] mb-1.5 md:mb-2 lg:mb-2.5"
                   >
                     {line.split("").map((char, charIndex) => (
                       <motion.span
