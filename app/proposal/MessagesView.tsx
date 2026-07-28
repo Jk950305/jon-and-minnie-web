@@ -14,7 +14,7 @@ const BGM_FILE = '/assets/True_Song.mp3';
 
 // Stage 1: Memory Tunnel (Focus on storytelling & shared history)
 const PROPOSAL_MESSAGES = [
-  "안녕 공주! 진심이 담긴 노래 대신에 진심이 담긴 편지를 써보려 해..",
+  "안녕 공주! 진심이 담긴 노래 대신에 진심이 담긴 편지를 써보려 해.",
   "우리 연애하기 전부터 밤늦게 만나서 얘기 나눴던 거 기억나?",
   "걱정도 많고 설렘도 가득했던 그 시간들이 벌써 7년이나 지났어.",
   "그렇게 2019년 10월 25일 우리가 연인이 되었던 날이 아직도 생생해.",
@@ -39,8 +39,8 @@ const PROPOSAL_MESSAGES = [
 
 // Stage 2: Proposal Letter (Focus on future promises & sincerity)
 const PROPOSAL_TEXT = 
-`세상에서 내가 가장 사랑하는 아기공주민희야!
-우리가 함께한 지난 시간들을 가만히 되돌아보니,
+`나를 누구보다 잘 알고, 내가 누구보다 사랑하는 민희야! 
+우리가 함께한 지난 시간들을 가만히 되돌아보니까,
 이제 다가올 내일이 두렵기보다는 설렘으로 가득해.
 서로의 손을 꼭 잡고 앞으로 걸어갈 우리의 길 위에서,
 어떠한 상황 속에서도 우리는 지금처럼 잘 해낼 거라 믿어.
@@ -48,14 +48,14 @@ const PROPOSAL_TEXT =
 잠들기 전 그날 하루의 일상을 서로 공유하며 얘기하는 일들,
 그 평범하고 소소한 일상이 우리에겐 특별한 기적이 될 거야.
 너의 곁에서 언제나 든든한 버팀목이자 안식처가 되어줄게.
-우리가 함께 맞이할 모든 순간순간마다 온 마음으로 사랑하면서
-우리의 미래를 조금 더 구체적으로 계획해 보고 싶어.
+우리가 함께 맞이할 모든 순간마다 진심을 다 해 사랑하면서
+이제 우리의 미래를 보다 더 구체적으로 계획해 보고 싶어.
 내 인생에서 민희가 없는 미래는 상상조차 할 수 없을 만큼,
 너와 함께 그려 나갈 우리의 내일이 세상 무엇보다 기대돼.
 영원이라는 약속을 우리 서로 천천히 정성껏 채워 가고,
-앞으로도 항상 같은 곳을 바라보며 나란히 걷자!
+앞으로도 항상 같은 곳을 바라보면서 나란히 걸어나가보자!
 나의 어제이자 오늘, 그리고 가장 눈부신 내일인 너에게,
-이제는 연인을 넘어 평생을 함께할 내 편이 되어줬으면 해.`;
+이제는 연인을 넘어 평생을 함께할 너의 편이 되어주고 싶어.`;
 
 // Automatically convert to an array based on line breaks (\n)
 const letterLines = PROPOSAL_TEXT.split('\n').filter(line => line.trim() !== '');
@@ -286,7 +286,7 @@ export default function CinematicProposalView() {
             </div>
 
             {/* Stage 1 Message Container (Typewriter) */}
-            <div className="mt-8 md:mt-12 w-full max-w-[90%] md:max-w-xl mx-auto relative z-20 h-[100px]">
+            <div className="mt-8 md:mt-12 w-full max-w-[98%] md:max-w-xl mx-auto relative z-20 flex items-center justify-center min-h-[80px] px-1 md:px-0">
               <AnimatePresence mode="wait">
                 {PROPOSAL_MESSAGES[msgIndex] && (
                   <motion.p
@@ -303,7 +303,7 @@ export default function CinematicProposalView() {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="absolute top-1/2 -translate-y-1/2 left-0 right-0 px-4 text-white/95 text-[15px] md:text-lg lg:text-xl font-medium leading-[1.7] drop-shadow-md text-shadow-lg text-center break-keep"
+                    className="w-full text-white/95 text-[clamp(10px,2.5vw,20px)] md:text-lg lg:text-xl font-medium leading-[1.7] drop-shadow-md text-shadow-lg text-center whitespace-nowrap"
                   >
                     {PROPOSAL_MESSAGES[msgIndex].split("").map((char, charIndex) => (
                       <motion.span
@@ -330,40 +330,47 @@ export default function CinematicProposalView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 3 } }}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4 md:px-8 py-6 overflow-hidden bg-black"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center py-6 overflow-hidden bg-black"
           >
-            {/* 💡 Stage 2 텍스트를 정중앙에 위치하도록 items-center와 text-center 클래스를 적용했습니다 */}
-            <div className="w-full max-w-2xl flex flex-col items-center justify-center h-full text-center">
-              {letterLines.map((line, index) => (
-                <motion.p
-                  key={`letter-${index}`}
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    hidden: { opacity: 1 }, 
-                    visible: { 
-                      opacity: 1, 
-                      transition: { 
-                        delayChildren: index * 3.4, // 각 줄이 시작되는 시간 간격
-                        staggerChildren: 0.05 
-                      } 
-                    }
-                  }}
-                  className="text-white/95 font-medium whitespace-nowrap drop-shadow-md text-shadow-lg tracking-tight text-[clamp(14px,3.8vw,18px)] md:text-[20px] lg:text-[22px] mb-1.5 md:mb-2 lg:mb-2.5"
-                >
-                  {line.split("").map((char, charIndex) => (
-                    <motion.span
-                      key={charIndex}
-                      variants={{
-                        hidden: { opacity: 0, y: 3 }, 
-                        visible: { opacity: 1, y: 0 }
-                      }}
-                    >
-                      {char === " " ? "\u00A0" : char}
-                    </motion.span>
-                  ))}
-                </motion.p>
-              ))}
+            {/* 
+               💡 수정된 정렬 방식: 
+               가장 긴 텍스트를 기준으로 컨테이너의 너비(w-fit)가 정해집니다.
+               그 후 각 줄(p 태그)에 flex justify-between을 걸어두어,
+               자연스럽고 이질감 없는 미세한 양쪽 정렬(완벽한 블록 형태)이 만들어지게 됩니다. 
+            */}
+            <div className="w-full h-full flex flex-col items-center justify-center px-4 md:px-0">
+              <div className="flex flex-col items-stretch w-fit max-w-full">
+                {letterLines.map((line, index) => (
+                  <motion.p
+                    key={`letter-${index}`}
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 1 }, 
+                      visible: { 
+                        opacity: 1, 
+                        transition: { 
+                          delayChildren: index * 3.4, 
+                          staggerChildren: 0.05 
+                        } 
+                      }
+                    }}
+                    className="w-full flex justify-between text-white/95 font-medium whitespace-nowrap drop-shadow-md text-shadow-lg tracking-tight text-[clamp(10.5px,2.6vw,18px)] md:text-[20px] lg:text-[22px] mb-1.5 md:mb-2 lg:mb-2.5"
+                  >
+                    {line.split("").map((char, charIndex) => (
+                      <motion.span
+                        key={charIndex}
+                        variants={{
+                          hidden: { opacity: 0, y: 3 }, 
+                          visible: { opacity: 1, y: 0 }
+                        }}
+                      >
+                        {char === " " ? "\u00A0" : char}
+                      </motion.span>
+                    ))}
+                  </motion.p>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}
@@ -409,13 +416,12 @@ export default function CinematicProposalView() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 2.5, delay: 5, ease: "easeOut" }}
-              className="relative z-10 flex flex-col items-center text-center px-6"
+              className="relative z-10 flex flex-col items-center text-center px-4 w-full"
             >
-              <h1 className="font-serif font-bold text-3xl md:text-5xl text-stone-900 mb-8 leading-relaxed tracking-tight break-keep drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
-                나의 하나뿐인 아기공주 민희야,<br/> 
-                나랑 결혼해줄래?
+              <h1 className=" text-[clamp(16px,4.5vw,36px)] md:text-6xl text-stone-800 mb-1 leading-relaxed tracking-tight drop-shadow-[0_8px_8px_rgba(0,0,0,0.3)] flex flex-col items-center gap-2">
+                <span className="whitespace-nowrap">나의 하나뿐인 아기공주 민희야,</span>
+                <span className="whitespace-nowrap">나랑 결혼해줄래?</span>
               </h1>
-            
             </motion.div>
 
             {/* Replay button */}
